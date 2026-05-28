@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Every 6 Seconds</title>
+  <meta name="description" content="A story you shouldn't have opened.">
+  <meta property="og:title" content="Every 6 Seconds">
+  <meta property="og:description" content="A story you shouldn't have opened.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game">
+
+    <!-- ========== SCENE 0: HORROR OPENING ========== -->
+    <div class="scene active" id="scene-0">
+      <div class="blood-layer opening-blood" id="openingBlood"></div>
+      <div class="scene-inner horror-inner">
+        <p class="horror-label">CONTENT WARNING &middot; 16+</p>
+        <h1 class="horror-title">EVERY 6 SECONDS</h1>
+        <p class="horror-sub">You will be asked to do something<br>you cannot undo.</p>
+        <button class="btn btn-horror" id="btnStart">Enter</button>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 1: WARM STORIES (9 lines) ========== -->
+    <div class="scene" id="scene-1">
+      <div class="scene-bg scene-bg-warm" id="bg1"></div>
+      <div class="water"></div>
+      <div class="scene-inner">
+        <div class="animal-group">
+          <img src="images/jaguar/3.png" class="animal-img animal-family" alt="Jaguar family" draggable="false">
+        </div>
+        <div class="text-panel warm-text" id="textPanel1"></div>
+        <div class="prompt hidden" id="prompt1">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 2: HUNTER TRANSITION (3 lines) ========== -->
+    <div class="scene" id="scene-2">
+      <div class="scene-bg scene-bg-dark" id="bg2"></div>
+      <div class="scene-inner">
+        <div class="silhouette">
+          <img src="images/jaguar/2.png" class="animal-img silhouette-img" alt="" draggable="false">
+        </div>
+        <div class="gun-view" id="gun2">
+          <svg viewBox="0 0 200 140" class="gun-svg"><rect x="0" y="18" width="145" height="26" rx="2" fill="#3a3a3a"/><rect x="5" y="19" width="135" height="5" rx="1" fill="#4a4a4a" opacity=".5"/><rect x="2" y="12" width="6" height="8" rx="1" fill="#333"/><rect x="130" y="12" width="10" height="8" rx="1" fill="#333"/><rect x="55" y="21" width="22" height="8" rx="1" fill="#2a2a2a"/><circle cx="3" cy="31" r="4" fill="#1a1a1a"/><rect x="40" y="44" width="105" height="14" rx="2" fill="#353535"/><path d="M78 58C78 84 107 84 107 58" fill="none" stroke="#3a3a3a" stroke-width="3.5" stroke-linecap="round"/><line x1="92" y1="61" x2="90" y2="76" stroke="#555" stroke-width="3" stroke-linecap="round"/><path d="M107 44L145 44L145 58L152 113Q151 123 142 121L128 118Q121 116 123 58L107 58Z" fill="#2a2a2a"/><line x1="128" y1="70" x2="147" y2="72" stroke="#353535" stroke-width="1.2"/><line x1="127" y1="80" x2="146" y2="82" stroke="#353535" stroke-width="1.2"/><line x1="126" y1="90" x2="145" y2="92" stroke="#353535" stroke-width="1.2"/><line x1="125" y1="100" x2="144" y2="102" stroke="#353535" stroke-width="1.2"/><rect x="140" y="13" width="8" height="12" rx="2" fill="#3a3a3a"/></svg>
+        </div>
+        <div class="text-panel horror" id="textPanel2"></div>
+        <div class="prompt hidden" id="prompt2">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 3: KILL (multi-target) ========== -->
+    <div class="scene" id="scene-3">
+      <div class="scene-bg scene-bg-dark" id="bg3"></div>
+      <div class="blood-layer" id="bloodLayer"></div>
+      <div class="blood-layer" id="bloodFlood"></div>
+      <div class="scene-inner">
+        <!-- Multiple jaguar targets -->
+        <div class="target-animal" data-idx="0" style="left:8%; bottom:22%;">
+          <img src="images/jaguar/2.png" class="animal-img silhouette-img" draggable="false">
+        </div>
+        <div class="target-animal" data-idx="1" style="left:32%; bottom:30%;">
+          <img src="images/jaguar/2.png" class="animal-img silhouette-img" draggable="false">
+        </div>
+        <div class="target-animal" data-idx="2" style="left:64%; bottom:24%;">
+          <img src="images/jaguar/2.png" class="animal-img silhouette-img" draggable="false">
+        </div>
+        <div class="target-animal" data-idx="3" style="left:44%; bottom:15%;">
+          <img src="images/jaguar/1.png" class="animal-img silhouette-img silhouette-cub" draggable="false">
+        </div>
+        <!-- First-person gun (aim wrapper + gun) -->
+        <div class="gun-aim" id="gunAim">
+          <div class="gun-view" id="gun3">
+            <svg viewBox="0 0 200 140" class="gun-svg"><rect x="0" y="18" width="145" height="26" rx="2" fill="#3a3a3a"/><rect x="5" y="19" width="135" height="5" rx="1" fill="#4a4a4a" opacity=".5"/><rect x="2" y="12" width="6" height="8" rx="1" fill="#333"/><rect x="130" y="12" width="10" height="8" rx="1" fill="#333"/><rect x="55" y="21" width="22" height="8" rx="1" fill="#2a2a2a"/><circle cx="3" cy="31" r="4" fill="#1a1a1a"/><rect x="40" y="44" width="105" height="14" rx="2" fill="#353535"/><path d="M78 58C78 84 107 84 107 58" fill="none" stroke="#3a3a3a" stroke-width="3.5" stroke-linecap="round"/><line x1="92" y1="61" x2="90" y2="76" stroke="#555" stroke-width="3" stroke-linecap="round"/><path d="M107 44L145 44L145 58L152 113Q151 123 142 121L128 118Q121 116 123 58L107 58Z" fill="#2a2a2a"/><line x1="128" y1="70" x2="147" y2="72" stroke="#353535" stroke-width="1.2"/><line x1="127" y1="80" x2="146" y2="82" stroke="#353535" stroke-width="1.2"/><line x1="126" y1="90" x2="145" y2="92" stroke="#353535" stroke-width="1.2"/><line x1="125" y1="100" x2="144" y2="102" stroke="#353535" stroke-width="1.2"/><rect x="140" y="13" width="8" height="12" rx="2" fill="#3a3a3a"/></svg>
+            <div class="muzzle-flash" id="muzzleFlash"></div>
+          </div>
+        </div>
+        <div class="prompt kill-prompt" id="promptKill">[ Click to shoot ]</div>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 4: AFTERMATH (6 lines, darkens) ========== -->
+    <div class="scene" id="scene-4">
+      <div class="scene-bg scene-bg-dark" id="bg4"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel4"></div>
+        <div class="prompt hidden" id="prompt4">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 5: REVEAL + DATA + CTA ========== -->
+    <div class="scene" id="scene-5">
+      <div class="scene-bg" id="bg5"></div>
+      <div class="scene-inner cta-inner">
+        <div class="text-panel reveal-text" id="textPanel5"></div>
+        <div class="poaching-data" id="poachingData"></div>
+        <div class="cta-buttons" id="ctaButtons">
+          <a href="https://www.worldwildlife.org/species/jaguar" target="_blank" rel="noopener" class="btn btn-share">Learn more</a>
+          <button class="btn btn-share" id="btnShare">Share</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,553 @@
+/* ==============================
+   RESET & BASE
+   ============================== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: 'Lora', Georgia, serif;
+  color: #e8e0d6;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ==============================
+   SCENE SYSTEM
+   ============================== */
+#game {
+  width: 100%; height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1.2s ease;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scene.active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 10;
+}
+
+.scene.fade-out {
+  opacity: 0;
+  z-index: 5;
+}
+
+.scene-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.text-panel, .prompt, .gun-view,
+.poaching-data, .cta-inner > * {
+  position: relative;
+  z-index: 20;
+}
+
+.scene-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+
+.scene-bg-dark {
+  filter: brightness(0.3) saturate(0.4);
+}
+
+.scene-bg-warm {
+  filter: brightness(0.65) saturate(1.3) sepia(0.12);
+}
+
+/* ==============================
+   BACKGROUNDS
+   ============================== */
+#bg1, #bg2, #bg3, #bg4 {
+  background-image: url(images/backgrounds/forest_main.png);
+}
+
+#bg5 {
+  background-image: url(images/backgrounds/devastation.png);
+  filter: brightness(0.35) saturate(0.5);
+}
+
+/* ==============================
+   SCENE 0: HORROR OPENING
+   ============================== */
+.horror-inner {
+  text-align: center;
+  z-index: 20;
+}
+
+.horror-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.4em;
+  color: #444;
+  margin-bottom: 2.5rem;
+}
+
+.horror-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 900;
+  color: #c0392b;
+  letter-spacing: 0.08em;
+  text-shadow:
+    0 0 60px rgba(139, 0, 0, 0.5),
+    0 4px 20px rgba(100, 0, 0, 0.4),
+    0 0 120px rgba(80, 0, 0, 0.25);
+  margin-bottom: 1.5rem;
+  animation: titlePulse 4s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 60px rgba(139,0,0,0.5), 0 4px 20px rgba(100,0,0,0.4); }
+  50% { opacity: 0.85; text-shadow: 0 0 40px rgba(139,0,0,0.3), 0 4px 15px rgba(100,0,0,0.25); }
+}
+
+.horror-sub {
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  color: #666;
+  line-height: 1.8;
+  margin-bottom: 3rem;
+  letter-spacing: 0.05em;
+}
+
+.btn-horror {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  padding: 0.8rem 2.5rem;
+  border: 1px solid rgba(139, 0, 0, 0.4);
+  color: #888;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.4s ease;
+}
+
+.btn-horror:hover {
+  color: #c0392b;
+  border-color: rgba(192, 57, 43, 0.6);
+  text-shadow: 0 0 15px rgba(192, 57, 43, 0.3);
+}
+
+/* Opening blood (static decoration) */
+.opening-blood {
+  z-index: 10;
+}
+
+/* ==============================
+   BUTTONS
+   ============================== */
+.btn {
+  font-family: 'Lora', serif;
+  font-size: 1rem;
+  padding: 0.9rem 2.5rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: #e8e0d6;
+  cursor: pointer;
+  letter-spacing: 0.15em;
+  transition: all 0.4s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.4);
+}
+
+/* ==============================
+   SCENE 1: WARM STORIES
+   ============================== */
+.animal-group {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-end;
+  margin-bottom: 2.5rem;
+}
+
+/* ==============================
+   ANIMAL IMAGES
+   ============================== */
+.animal-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+.animal-family {
+  width: clamp(250px, 45vw, 450px);
+  filter: drop-shadow(0 8px 30px rgba(0,0,0,0.5));
+}
+
+.silhouette-img {
+  width: clamp(160px, 28vw, 300px);
+  filter: brightness(0) drop-shadow(0 0 20px rgba(0,0,0,0.8));
+}
+
+/* ==============================
+   WATER (Scene 1)
+   ============================== */
+.water {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28%;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    rgba(25, 65, 85, 0.15) 30%,
+    rgba(18, 50, 70, 0.3) 70%,
+    rgba(12, 40, 60, 0.4) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.warm-text {
+  color: #d4c8b0;
+  text-shadow: 0 2px 15px rgba(0,0,0,0.7);
+}
+
+/* ==============================
+   TEXT PANEL & TYPEWRITER
+   ============================== */
+.text-panel {
+  font-size: clamp(1.15rem, 2.5vw, 1.6rem);
+  line-height: 1.8;
+  text-align: center;
+  max-width: 600px;
+  min-height: 2.5em;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.85);
+}
+
+.text-panel.horror {
+  color: #c0392b;
+  text-shadow: 0 0 15px rgba(192, 57, 43, 0.4), 0 2px 12px rgba(0,0,0,0.85);
+  font-style: italic;
+}
+
+.text-panel.text-big {
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  letter-spacing: 0.04em;
+}
+
+.typewriter-cursor::after {
+  content: '|';
+  animation: blink 0.7s step-end infinite;
+  color: inherit;
+  opacity: 0.6;
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+.prompt {
+  position: absolute;
+  bottom: 8%;
+  font-size: 0.85rem;
+  color: #666;
+  letter-spacing: 0.2em;
+  animation: promptPulse 2.5s ease-in-out infinite;
+  transition: opacity 0.5s ease;
+}
+
+.prompt.hidden { opacity: 0; pointer-events: none; }
+
+@keyframes promptPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+.kill-prompt {
+  font-family: 'Courier New', monospace;
+  color: #c0392b;
+  font-size: 1rem;
+  letter-spacing: 0.3em;
+}
+
+/* ==============================
+   SCENE 2: HUNTER
+   ============================== */
+.silhouette {
+  position: relative;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==============================
+   MULTI-TARGET SYSTEM (Scene 3)
+   ============================== */
+.target-animal {
+  position: absolute;
+  z-index: 10;
+  transform-origin: center bottom;
+  transition: transform 0.5s ease, opacity 0.6s ease;
+}
+
+.target-animal .silhouette-img {
+  width: clamp(120px, 20vw, 220px);
+}
+
+.target-animal .silhouette-cub {
+  width: clamp(70px, 12vw, 130px);
+}
+
+.target-animal.fallen {
+  transform: rotate(85deg) translateY(20px) scaleY(0.5);
+  opacity: 0.25;
+}
+
+/* Gun aim wrapper — mouse tracking */
+.gun-aim {
+  position: absolute;
+  bottom: 2%;
+  right: 8%;
+  width: clamp(130px, 22vw, 220px);
+  z-index: 20;
+  transition: transform 0.08s ease-out, opacity 0.6s ease;
+}
+
+.gun-aim .gun-view {
+  position: relative;
+  bottom: auto;
+  right: auto;
+  width: 100%;
+}
+
+/* Blood flood layer (above targets & gun) */
+#bloodFlood {
+  z-index: 22;
+}
+
+/* Kill prompt above everything */
+#scene-3 .kill-prompt {
+  z-index: 25;
+}
+
+/* ==============================
+   GUN (first-person)
+   ============================== */
+.gun-view {
+  position: absolute;
+  bottom: 2%;
+  right: 8%;
+  width: clamp(130px, 22vw, 220px);
+  z-index: 20;
+  transform-origin: 75% 90%;
+}
+
+.gun-svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+}
+
+.gun-view.recoil {
+  animation: gunRecoil 0.22s ease-out;
+}
+
+@keyframes gunRecoil {
+  0%   { transform: rotate(0) translate(0); }
+  12%  { transform: rotate(-22deg) translate(12px, -18px); }
+  35%  { transform: rotate(-12deg) translate(6px, -8px); }
+  100% { transform: rotate(0) translate(0); }
+}
+
+/* Muzzle flash */
+.muzzle-flash {
+  position: absolute;
+  top: 10%;
+  left: -8%;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,120,20,0.6) 40%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.muzzle-flash.fire {
+  opacity: 1;
+  animation: flashPop 0.08s ease-out forwards;
+}
+
+@keyframes flashPop {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+
+/* ==============================
+   BLOOD EFFECTS
+   ============================== */
+.blood-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.blood-img {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 1;
+  max-width: none;
+}
+
+.blood-img.show {
+  opacity: 0.85;
+}
+
+/* ==============================
+   RECOIL CAMERA SHAKE
+   ============================== */
+#game.recoil-shake {
+  animation: recoilShake 0.3s ease-out;
+}
+
+@keyframes recoilShake {
+  0%, 100% { transform: translate(0); }
+  10%  { transform: translate(-14px, -10px) rotate(-1.2deg); }
+  25%  { transform: translate(10px, 7px) rotate(0.8deg); }
+  45%  { transform: translate(-6px, -4px) rotate(-0.4deg); }
+  65%  { transform: translate(3px, 2px); }
+  80%  { transform: translate(-1px, -1px); }
+}
+
+/* ==============================
+   SCENE 4: AFTERMATH
+   ============================== */
+#scene-4 .scene-bg {
+  transition: filter 2s ease;
+}
+
+/* ==============================
+   SCENE 5: REVEAL + DATA + CTA
+   ============================== */
+.cta-inner {
+  text-align: center;
+  gap: 1.5rem;
+}
+
+.reveal-text {
+  min-height: auto;
+}
+
+/* Poaching data */
+.poaching-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.data-line {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.data-line.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.data-line .num {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #e74c3c;
+  text-shadow: 0 0 15px rgba(231, 76, 60, 0.35);
+  display: block;
+}
+
+.data-line .label {
+  font-size: 0.8rem;
+  color: #777;
+  letter-spacing: 0.08em;
+}
+
+.data-intro {
+  font-size: 0.85rem;
+  color: #888;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.3rem;
+}
+
+/* Brazil progress data — hopeful tone */
+.brazil-intro {
+  margin-top: 1.8rem;
+  color: #8a9a82;
+}
+
+.brazil-line .label {
+  color: #7fa87a;
+  font-size: 0.82rem;
+}
+
+/* CTA buttons */
+.cta-buttons {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+  margin-top: 1rem;
+}
+
+.btn-share {
+  font-size: 1.05rem;
+  padding: 1rem 3rem;
+  border-color: rgba(255,255,255,0.3);
+}
+
+.btn-share:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.5);
+}
+
+/* ==============================
+   CURSOR
+   ============================== */
+#scene-3.active { cursor: crosshair; }
+
+/* ==============================
+   RESPONSIVE
+   ============================== */
+@media (max-width: 600px) {
+  .gun-view { right: 3%; width: clamp(100px, 28vw, 160px); }
+  .gun-aim { right: 3%; width: clamp(100px, 28vw, 160px); }
+  .target-animal .silhouette-img { width: clamp(80px, 16vw, 140px); }
+  .target-animal .silhouette-cub { width: clamp(50px, 10vw, 90px); }
+  .cta-buttons { flex-direction: column; align-items: center; }
+}
