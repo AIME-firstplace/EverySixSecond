@@ -9,18 +9,19 @@
   let isTransitioning = false;
   let canInteract = false;
   let floodDone = false;
+  let revealComplete = false;
   let audioCtx = null;
   let drone = null;
 
   /* ============ STORY DATA (JSON-driven) ============ */
   const WARM_LINES = [
-    { text: 'Her name is Luna.', speed: 50, wait: 800 },
+    { text: 'Her name is Harlow.', speed: 50, wait: 800 },
     { text: 'They live deep in the Amazon.', speed: 45, wait: 700 },
     { text: 'The water is still.', speed: 50, wait: 800 },
     { text: 'She has two cubs.', speed: 50, wait: 700 },
     { text: 'Mira, the older one. She loves to climb.', speed: 45, wait: 800 },
     { text: "Sol, the younger. He's afraid of the river.", speed: 45, wait: 800 },
-    { text: 'Luna teaches them how to listen.', speed: 50, wait: 700 },
+    { text: 'Harlow teaches them how to listen.', speed: 50, wait: 700 },
     { text: 'How to wait. How to stay.', speed: 55, wait: 1200 },
     { text: "She doesn't know you're watching.", speed: 50, wait: 500 },
   ];
@@ -32,7 +33,7 @@
   ];
 
   const AFTERMATH_LINES = [
-    { text: "Luna doesn't move.", speed: 55, wait: 1500 },
+    { text: "Harlow doesn't move.", speed: 55, wait: 1500 },
     { text: 'Sol calls for her.', speed: 50, wait: 1500, sound: 'cry' },
     { text: 'Mira waits by the water.', speed: 50, wait: 1200 },
     { text: 'The night comes.', speed: 60, wait: 1500 },
@@ -163,6 +164,7 @@
       case 3: enterKill();       break;
       case 4: enterAftermath();  break;
       case 5: enterReveal();     break;
+      case 6: /* references — static */ break;
     }
   }
 
@@ -217,8 +219,8 @@
     } catch (_) { drone = null; }
   }
 
-  /* Gunshot: sharp crack + low boom */
-  function playGunshot() {
+  /* Gunshot: sharp crack + low boom. scale<1 dims it for overlapping bursts. */
+  function playGunshot(scale = 1) {
     if (!audioCtx) return;
     try {
       const len = Math.floor(audioCtx.sampleRate * 0.06);
@@ -230,7 +232,7 @@
       const hp = audioCtx.createBiquadFilter();
       hp.type = 'highpass'; hp.frequency.value = 1200;
       const g = audioCtx.createGain();
-      g.gain.value = 0.4;
+      g.gain.value = 0.4 * scale;
       src.connect(hp); hp.connect(g); g.connect(audioCtx.destination);
       src.start();
 
@@ -239,7 +241,7 @@
       osc.type = 'sine';
       osc.frequency.setValueAtTime(90, audioCtx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.18);
-      og.gain.setValueAtTime(0.55, audioCtx.currentTime);
+      og.gain.setValueAtTime(0.55 * scale, audioCtx.currentTime);
       og.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
       osc.connect(og); og.connect(audioCtx.destination);
       osc.start(); osc.stop(audioCtx.currentTime + 0.3);
@@ -360,6 +362,9 @@
       layer.appendChild(img);
       void img.offsetWidth;
       img.classList.add('show');
+
+      /* one gunshot per splat — dimmed so overlapping bursts don't clip */
+      playGunshot(0.18);
 
       /* accelerate: 180ms at start -> ~50ms near end */
       const t = i / count;
@@ -578,6 +583,12 @@
     const dataBox = $('#poachingData');
     const ctaButtons = $('#ctaButtons');
 
+    /* If returning from references, leave final state intact */
+    if (revealComplete) {
+      ctaButtons.style.opacity = '1';
+      return;
+    }
+
     panel.textContent = '';
     panel.classList.remove('text-big');
     dataBox.innerHTML = '';
@@ -586,8 +597,8 @@
     /* --- Narrative --- */
     await delay(2000);
 
-    /* "Luna is not real." */
-    await typewrite(panel, 'Luna is not real.', 55);
+    /* "Harlow is not real." */
+    await typewrite(panel, 'Harlow is not real.', 55);
     await delay(2500);
     panel.textContent = '';
 
@@ -671,6 +682,7 @@
 
     /* Show CTA buttons */
     ctaButtons.style.opacity = '1';
+    revealComplete = true;
   }
 
   /* ============ EVENT WIRING ============ */
@@ -719,6 +731,12 @@
         goTo(4);
       }
     });
+
+    /* References buttons */
+    const refsBtn = $('#btnRefs');
+    if (refsBtn) refsBtn.addEventListener('click', () => goTo(6));
+    const backRefsBtn = $('#btnBackFromRefs');
+    if (backRefsBtn) backRefsBtn.addEventListener('click', () => goTo(5));
 
     /* Share button */
     const shareBtn = $('#btnShare');

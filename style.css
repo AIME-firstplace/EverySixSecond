@@ -91,6 +91,11 @@ html, body {
   filter: brightness(0.35) saturate(0.5);
 }
 
+#bg6 {
+  background-image: url(images/backgrounds/forest_main.png);
+  filter: brightness(0.18) saturate(0.25);
+}
+
 /* ==============================
    SCENE 0: HORROR OPENING
    ============================== */
@@ -534,6 +539,83 @@ html, body {
 .btn-share:hover {
   background: rgba(255,255,255,0.08);
   border-color: rgba(255,255,255,0.5);
+}
+
+/* ==============================
+   SCENE 6: REFERENCES (MLA)
+   ============================== */
+.refs-inner {
+  justify-content: flex-start;
+  padding: 4rem 2rem 2rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.refs-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  color: #d4c8b0;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4rem;
+  text-shadow: 0 2px 15px rgba(0,0,0,0.7);
+  z-index: 20;
+}
+
+.refs-sub {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.35em;
+  color: #666;
+  margin-bottom: 2.5rem;
+  text-transform: uppercase;
+  z-index: 20;
+}
+
+.refs-list {
+  list-style: decimal;
+  max-width: 760px;
+  width: 100%;
+  padding-left: 2rem;
+  margin: 0 auto 2.5rem;
+  z-index: 20;
+  position: relative;
+}
+
+.ref-item {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: #b8ad9a;
+  margin-bottom: 1.1rem;
+  padding-left: 0.4rem;
+  text-align: left;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+  word-break: break-word;
+}
+
+.ref-item em {
+  color: #d4c8b0;
+  font-style: italic;
+}
+
+.ref-item::marker {
+  color: #666;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+}
+
+#btnBackFromRefs {
+  margin: 0 auto 2rem;
+  z-index: 20;
+  position: relative;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .refs-inner { padding: 2.5rem 1.2rem 1.5rem; }
+  .ref-item { font-size: 0.82rem; line-height: 1.6; }
+  .refs-list { padding-left: 1.4rem; }
 }
 
 /* ==============================
