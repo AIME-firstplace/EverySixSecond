@@ -2,7 +2,7 @@
 
 Play it here: https://aime-firstplace.github.io/EverySixSecond/
 
-Hi! I'm an 8th grader who's really into AI and programming, and this is the first project I've ever made. (To be honest, Claude Code did most of the real work, lol.) It's a short interactive story about the poaching of wild animals. You spend a little time with a mother jaguar and her two cubs in the Amazon, and then the story puts the gun in your hands. By the end it shows how often this actually happens out in the real world, and what it could look like if we chose to protect them instead. I made it because numbers like "thousands of animals a year" are kind of impossible to really feel, so I wanted to shrink it down to just one family. Hope you like it :)
+Hi! I'm an 8th grader who's really into AI and programming, and this is the first project I've ever made. (To be honest claude code did most of the real work lol：) It's a short interactive story about the poaching of wild animals. You spend a little time with a mother jaguar and her two cubs in the Amazon, and then the story puts the gun in your hands. By the end it shows how often this actually happens out in the real world, and what it could look like if we chose to protect them instead. I made it because numbers like "thousands of animals a year" are kind of impossible to really feel, so I wanted to shrink it down to just one family. Hope you like it :)
 
 ## How to play
 
