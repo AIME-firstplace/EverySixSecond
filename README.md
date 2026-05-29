@@ -14,4 +14,4 @@ The poaching figures (pangolins, elephants, rhinos) and the jaguar trafficking i
 
 ## Credits
 
-Built with plain HTML, CSS, and JavaScript. The scene art was made with Google Stitch and sharpened with Real-ESRGAN. The animal and rainforest sounds are from SoundBible (CC BY 3.0). This is a non-commercial project.
+Built with plain HTML, CSS, and JavaScript. The scene art was made with Google Stitch and sharpened with Real-ESRGAN. The animal and rainforest sounds are from SoundBible (CC BY 3.0). This is a non-commercial project. AND,OMG CLAUDE CODE YOU ARE THE BEST
