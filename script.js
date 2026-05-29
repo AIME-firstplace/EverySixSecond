@@ -130,7 +130,7 @@
       enter: 'Enter',
       clickContinue: 'Click to continue',
       clickShoot: '[ Click to shoot ]',
-      pressEnter: '[ Press Enter ]',
+      pressEnter: '[ Tap, or press Enter ]',
       learnMore: 'Learn more',
       share: 'Share',
       shareMsg: 'I named a jaguar cub {cub}. Every 6 seconds, an animal dies because of us.',
@@ -184,7 +184,7 @@
         14: 'Click anywhere to continue',
         16: 'Take it in  ·  click when you are ready',
       },
-      hintPressEnter: 'Press  ENTER  to continue',
+      hintPressEnter: 'Tap, click, or press  ENTER',
       sceneNames: { intro: 'Introduction', 0: 'Warning', 1: 'Warmth', 16: 'The Moment', 2: 'The Hunter', 7: 'The Choice', 3: 'The Shot', 4: 'Aftermath', 8: 'The Cubs', 9: 'The Skin', 5: 'The Truth', 6: 'Sources', 10: 'The Guardian', 12: 'Watch', 13: 'Step In', 11: 'Protect', 14: 'They Live' },
       sceneDesc: { intro: 'Before you begin', 0: 'Content warning', 7: 'A choice that was never yours', 3: 'The hunt — you pull the trigger', 5: 'The truth & the data', 6: 'Works cited', 10: 'Walk it again, as a guardian', 11: 'You shield them' },
       reveal: {
@@ -220,7 +220,7 @@
       enter: '进入',
       clickContinue: '点击继续',
       clickShoot: '[ 点击开枪 ]',
-      pressEnter: '[ 按 Enter 继续 ]',
+      pressEnter: '[ 点击，或按 Enter 继续 ]',
       learnMore: '了解更多',
       share: '分享',
       shareMsg: '我给一只美洲豹幼崽起名叫 {cub}。每 6 秒，就有一只动物因我们而死。',
@@ -274,7 +274,7 @@
         14: '点击任意处继续',
         16: '好好看看它  ·  准备好了再点',
       },
-      hintPressEnter: '按  ENTER  继续',
+      hintPressEnter: '点击任意处，或按  ENTER',
       sceneNames: { intro: '序', 0: '警告', 1: '温暖', 16: '凝住的一刻', 2: '猎人', 7: '选择', 3: '那一枪', 4: '余波', 8: '幼崽', 9: '那张皮', 5: '真相', 6: '来源', 10: '守护者', 12: '守望', 13: '挺身', 11: '守护', 14: '它们活着' },
       sceneDesc: { intro: '开始之前', 0: '内容警告', 7: '一个从来不属于你的选择', 3: '狩猎 —— 你扣下扳机', 5: '真相与数据', 6: '参考文献', 10: '以守护者身份，重走一遍', 11: '你护住它们' },
       reveal: {
@@ -991,6 +991,14 @@
     });
 
     return nearest;
+  }
+
+  /* leave the blood-flood for the aftermath — Enter, Space, or a click/tap */
+  function advanceFromFlood() {
+    if (currentScene !== 3 || !floodDone) return;
+    floodDone = false;
+    canInteract = false;
+    goTo(4);
   }
 
   function handleKill(e) {
@@ -1936,6 +1944,7 @@
     /* Scene 3: kill shots */
     $('#scene-3').addEventListener('click', (e) => {
       if (currentScene !== 3) return;
+      if (floodDone) { advanceFromFlood(); return; }   /* tap/click to move on (mobile-friendly) */
       handleKill(e);
     });
 
@@ -1962,12 +1971,11 @@
       advanceText();
     });
 
-    /* Enter key — advance from blood flood to aftermath */
+    /* Enter or Space — advance from blood flood to aftermath */
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && currentScene === 3 && floodDone) {
-        floodDone = false;
-        canInteract = false;
-        goTo(4);
+      if ((e.key === 'Enter' || e.key === ' ' || e.code === 'Space') && currentScene === 3 && floodDone) {
+        e.preventDefault();
+        advanceFromFlood();
       }
     });
 
