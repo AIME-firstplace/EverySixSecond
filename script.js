@@ -161,7 +161,7 @@
       shootBtn: 'Shoot',
       waitLines: ['You waited.', 'But the skin still pays.', 'Your finger moved anyway.'],
       guardianBtn: 'Walk it again, as a guardian',
-      guardHint: 'Move to aim  ·  click to shield each one',
+      guardHint: 'Aim  ·  tap each one to keep it safe',
       guardResolve: 'They live. This time, they live.',
       returnBtn: 'Continue',
       citeJaguar: 'Jaguars are trafficked for their skins, teeth & skulls — <a href="https://cites.org/eng/CITES_study_illegal_trade_poaching_jaguar_pantheraonca_2112021" target="_blank" rel="noopener">CITES study, 2021</a>',
@@ -170,7 +170,7 @@
         0: 'Click  ENTER  to begin',
         1: 'Click anywhere to continue',
         2: 'Click anywhere to continue',
-        3: 'Move mouse to aim  ·  left-click to shoot',
+        3: 'Aim  ·  click or tap to shoot',
         4: 'Click anywhere to continue',
         5: 'Choose an option below',
         6: 'Click  BACK  to return',
@@ -178,7 +178,7 @@
         8: 'Click anywhere to continue',
         9: 'Click anywhere to continue',
         10: 'Click anywhere to continue',
-        11: 'Move to aim  ·  click to shield each one',
+        11: 'Aim  ·  tap each one to keep it safe',
         12: 'Click anywhere to continue',
         13: 'Click anywhere to continue',
         14: 'Click anywhere to continue',
@@ -251,7 +251,7 @@
       shootBtn: '开枪',
       waitLines: ['你等了。', '但皮还是值钱。', '你的手指还是动了。'],
       guardianBtn: '以守护者身份，重走一遍',
-      guardHint: '移动瞄准  ·  点击护住每一只',
+      guardHint: '瞄准  ·  点击护住每一只',
       guardResolve: '它们活了下来。这一次，它们活了下来。',
       returnBtn: '继续',
       citeJaguar: '美洲豹因皮、牙、头骨遭非法贩运 — <a href="https://cites.org/eng/CITES_study_illegal_trade_poaching_jaguar_pantheraonca_2112021" target="_blank" rel="noopener">CITES 研究，2021</a>',
@@ -260,7 +260,7 @@
         0: '点击「进入」开始',
         1: '点击任意处继续',
         2: '点击任意处继续',
-        3: '移动鼠标瞄准  ·  左键开枪',
+        3: '瞄准  ·  点击开枪',
         4: '点击任意处继续',
         5: '在下方做出选择',
         6: '点击「返回」',
@@ -268,7 +268,7 @@
         8: '点击任意处继续',
         9: '点击任意处继续',
         10: '点击任意处继续',
-        11: '移动瞄准  ·  点击护住每一只',
+        11: '瞄准  ·  点击护住每一只',
         12: '点击任意处继续',
         13: '点击任意处继续',
         14: '点击任意处继续',
@@ -446,7 +446,7 @@
     0: 'Click  ENTER  to begin',
     1: 'Click anywhere to continue',
     2: 'Click anywhere to continue',
-    3: 'Move mouse to aim  ·  left-click to shoot',
+    3: 'Aim  ·  click or tap to shoot',
     4: 'Click anywhere to continue',
     5: 'Choose an option below',
     6: 'Click  BACK  to return',
@@ -1948,8 +1948,10 @@
       handleKill(e);
     });
 
-    /* Scene 3: mouse aiming */
+    /* Scene 3: aiming — mouse + touch (mobile) */
     $('#scene-3').addEventListener('mousemove', handleMouseMove);
+    $('#scene-3').addEventListener('touchstart', (e) => { if (e.touches[0]) handleMouseMove(e.touches[0]); }, { passive: true });
+    $('#scene-3').addEventListener('touchmove', (e) => { if (e.touches[0]) handleMouseMove(e.touches[0]); }, { passive: true });
 
     /* Scene 4: aftermath text — click to advance lines */
     $('#scene-4').addEventListener('click', () => {
@@ -1999,6 +2001,8 @@
     });
     $('#scene-11').addEventListener('click', handleProtect);
     $('#scene-11').addEventListener('mousemove', handleGuardMove);
+    $('#scene-11').addEventListener('touchstart', (e) => { if (e.touches[0]) handleGuardMove(e.touches[0]); }, { passive: true });
+    $('#scene-11').addEventListener('touchmove', (e) => { if (e.touches[0]) handleGuardMove(e.touches[0]); }, { passive: true });
     const guardReturn = $('#btnGuardReturn');
     if (guardReturn) guardReturn.addEventListener('click', (e) => { e.stopPropagation(); goTo(14); });
     [12, 13, 14].forEach((n) => {
