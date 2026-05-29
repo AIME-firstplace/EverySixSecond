@@ -15,8 +15,29 @@
 <body>
   <div id="game">
 
+    <!-- ========== OPENING SPLASH (title logo reveal) ========== -->
+    <div class="opening" id="opening">
+      <div class="opening-bg"></div>
+      <div class="opening-particles" id="openingParticles"></div>
+      <div class="opening-center">
+        <div class="opening-sweep"></div>
+        <h1 class="opening-title">EVERY 6 SECONDS</h1>
+        <div class="opening-rule"></div>
+        <p class="opening-tagline" id="openingTagline">A story you shouldn't have opened.</p>
+      </div>
+      <button class="opening-skip" id="openingSkip">Skip</button>
+    </div>
+
+    <!-- ========== LANGUAGE TOGGLE (top-left) ========== -->
+    <div class="lang-toggle" id="langToggle">
+      <button class="lang-opt active" data-lang="en">EN</button>
+      <span class="lang-sep">·</span>
+      <button class="lang-opt" data-lang="zh">中文</button>
+    </div>
+
     <!-- ========== SCENE 0: HORROR OPENING ========== -->
     <div class="scene active" id="scene-0">
+      <div class="scene-bg" id="bg0"></div>
       <div class="blood-layer opening-blood" id="openingBlood"></div>
       <div class="scene-inner horror-inner">
         <p class="horror-label">CONTENT WARNING &middot; 16+</p>
@@ -26,14 +47,20 @@
       </div>
     </div>
 
+    <!-- ========== INTRODUCTION (author's note, data-led) ========== -->
+    <div class="scene" id="scene-intro">
+      <div class="scene-bg intro-bg"></div>
+      <div class="scene-inner intro-inner">
+        <div class="intro-body" id="introBody"></div>
+        <div class="prompt hidden" id="promptIntro">Click to continue</div>
+      </div>
+    </div>
+
     <!-- ========== SCENE 1: WARM STORIES (9 lines) ========== -->
     <div class="scene" id="scene-1">
       <div class="scene-bg scene-bg-warm" id="bg1"></div>
-      <div class="water"></div>
+      <div class="scene-bg scene-bg-warm" id="bg1b"></div>
       <div class="scene-inner">
-        <div class="animal-group">
-          <img src="images/jaguar/3.png" class="animal-img animal-family" alt="Jaguar family" draggable="false">
-        </div>
         <div class="text-panel warm-text" id="textPanel1"></div>
         <div class="prompt hidden" id="prompt1">Click to continue</div>
       </div>
@@ -42,15 +69,22 @@
     <!-- ========== SCENE 2: HUNTER TRANSITION (3 lines) ========== -->
     <div class="scene" id="scene-2">
       <div class="scene-bg scene-bg-dark" id="bg2"></div>
+      <div class="scene-bg scene-bg-dark" id="bg2b"></div>
       <div class="scene-inner">
-        <div class="silhouette">
-          <img src="images/jaguar/2.png" class="animal-img silhouette-img" alt="" draggable="false">
-        </div>
-        <div class="gun-view" id="gun2">
-          <svg viewBox="0 0 200 140" class="gun-svg"><rect x="0" y="18" width="145" height="26" rx="2" fill="#3a3a3a"/><rect x="5" y="19" width="135" height="5" rx="1" fill="#4a4a4a" opacity=".5"/><rect x="2" y="12" width="6" height="8" rx="1" fill="#333"/><rect x="130" y="12" width="10" height="8" rx="1" fill="#333"/><rect x="55" y="21" width="22" height="8" rx="1" fill="#2a2a2a"/><circle cx="3" cy="31" r="4" fill="#1a1a1a"/><rect x="40" y="44" width="105" height="14" rx="2" fill="#353535"/><path d="M78 58C78 84 107 84 107 58" fill="none" stroke="#3a3a3a" stroke-width="3.5" stroke-linecap="round"/><line x1="92" y1="61" x2="90" y2="76" stroke="#555" stroke-width="3" stroke-linecap="round"/><path d="M107 44L145 44L145 58L152 113Q151 123 142 121L128 118Q121 116 123 58L107 58Z" fill="#2a2a2a"/><line x1="128" y1="70" x2="147" y2="72" stroke="#353535" stroke-width="1.2"/><line x1="127" y1="80" x2="146" y2="82" stroke="#353535" stroke-width="1.2"/><line x1="126" y1="90" x2="145" y2="92" stroke="#353535" stroke-width="1.2"/><line x1="125" y1="100" x2="144" y2="102" stroke="#353535" stroke-width="1.2"/><rect x="140" y="13" width="8" height="12" rx="2" fill="#3a3a3a"/></svg>
-        </div>
         <div class="text-panel horror" id="textPanel2"></div>
         <div class="prompt hidden" id="prompt2">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 7: THE CHOICE (illusory) ========== -->
+    <div class="scene" id="scene-7">
+      <div class="scene-bg scene-bg-dark" id="bg7"></div>
+      <div class="scene-inner choice-inner">
+        <div class="text-panel choice-text" id="choiceText"></div>
+        <div class="choice-buttons" id="choiceButtons">
+          <button class="btn choice-btn" id="btnWait">Wait</button>
+          <button class="btn choice-btn" id="btnShoot">Shoot</button>
+        </div>
       </div>
     </div>
 
@@ -80,6 +114,18 @@
             <div class="muzzle-flash" id="muzzleFlash"></div>
           </div>
         </div>
+        <!-- First-person scope reticle — follows the mouse -->
+        <div class="crosshair" id="crosshair">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(230,225,220,0.45)" stroke-width="1.4"/>
+            <circle cx="50" cy="50" r="27" fill="none" stroke="rgba(230,225,220,0.18)" stroke-width="1"/>
+            <line x1="50" y1="2" x2="50" y2="34" stroke="rgba(230,225,220,0.6)" stroke-width="1.4"/>
+            <line x1="50" y1="66" x2="50" y2="98" stroke="rgba(230,225,220,0.6)" stroke-width="1.4"/>
+            <line x1="2" y1="50" x2="34" y2="50" stroke="rgba(230,225,220,0.6)" stroke-width="1.4"/>
+            <line x1="66" y1="50" x2="98" y2="50" stroke="rgba(230,225,220,0.6)" stroke-width="1.4"/>
+            <circle class="reticle-dot" cx="50" cy="50" r="2.4" fill="rgba(192,57,43,0.95)"/>
+          </svg>
+        </div>
         <div class="prompt kill-prompt" id="promptKill">[ Click to shoot ]</div>
       </div>
     </div>
@@ -93,16 +139,28 @@
       </div>
     </div>
 
+    <!-- ========== SCENE 8: THE CUBS LEFT BEHIND ========== -->
+    <div class="scene" id="scene-8">
+      <div class="scene-bg" id="bg8"></div>
+      <div class="scene-bg" id="bg8b"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel8"></div>
+        <div class="prompt hidden" id="prompt8">Click to continue</div>
+      </div>
+    </div>
+
     <!-- ========== SCENE 5: REVEAL + DATA + CTA ========== -->
     <div class="scene" id="scene-5">
       <div class="scene-bg" id="bg5"></div>
       <div class="scene-inner cta-inner">
         <div class="text-panel reveal-text" id="textPanel5"></div>
+        <div class="death-counter" id="deathCounter"></div>
         <div class="poaching-data" id="poachingData"></div>
         <div class="cta-buttons" id="ctaButtons">
-          <a href="https://www.worldwildlife.org/species/jaguar" target="_blank" rel="noopener" class="btn btn-share">Learn more</a>
+          <a href="https://www.worldwildlife.org/species/jaguar" target="_blank" rel="noopener" class="btn btn-share" id="btnLearn">Learn more</a>
           <button class="btn btn-share" id="btnShare">Share</button>
           <button class="btn btn-share" id="btnRefs">References</button>
+          <button class="btn btn-share btn-guardian" id="btnGuardian">Walk it again, as a guardian</button>
         </div>
       </div>
     </div>
@@ -124,6 +182,57 @@
           <li class="ref-item">"Poaching." <em>Rainforest Trust</em>, www.rainforesttrust.org/our-impact/our-approach/threats-to-rainforests/poaching/. Accessed 28 May 2026.</li>
         </ol>
         <button class="btn btn-share" id="btnBackFromRefs">Back</button>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 10: GUARDIAN — REFRAME ========== -->
+    <div class="scene" id="scene-10">
+      <div class="scene-bg" id="bg10"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel10"></div>
+        <div class="prompt hidden" id="prompt10">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 11: GUARDIAN — PROTECT (inverts the shot) ========== -->
+    <div class="scene" id="scene-11">
+      <div class="scene-bg" id="bg11"></div>
+      <div class="scene-inner">
+        <div class="guardian-animal" data-idx="0" style="left:12%; bottom:24%;">
+          <img src="images/jaguar/2.png" class="animal-img guardian-img" draggable="false">
+        </div>
+        <div class="guardian-animal" data-idx="1" style="left:46%; bottom:30%;">
+          <img src="images/jaguar/2.png" class="animal-img guardian-img" draggable="false">
+        </div>
+        <div class="guardian-animal" data-idx="2" style="left:70%; bottom:22%;">
+          <img src="images/jaguar/1.png" class="animal-img guardian-img guardian-cub" draggable="false">
+        </div>
+        <div class="guard-reticle" id="guardReticle">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(229,194,130,0.55)" stroke-width="1.6"/>
+            <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(229,194,130,0.25)" stroke-width="1"/>
+            <circle cx="50" cy="50" r="3" fill="rgba(229,194,130,0.95)"/>
+          </svg>
+        </div>
+        <div class="prompt guard-prompt" id="promptGuard"></div>
+        <div class="text-panel guard-resolve" id="guardResolve"></div>
+        <button class="btn btn-share guard-return hidden" id="btnGuardReturn">Return</button>
+      </div>
+    </div>
+
+    <!-- Persistent control hint shown at the bottom of every scene -->
+    <div class="scene-hint" id="sceneHint"></div>
+
+    <!-- Persistent rewind button (bottom-right) + history/log panel -->
+    <button class="history-btn" id="historyBtn" aria-label="Rewind to an earlier moment">
+      <span class="history-btn-icon">&#8634;</span><span class="history-btn-label">Rewind</span>
+    </button>
+    <div class="history-panel" id="historyPanel">
+      <div class="history-inner">
+        <h2 class="history-title">Rewind</h2>
+        <p class="history-sub">Return to any moment you've already seen</p>
+        <div class="history-list" id="historyList"></div>
+        <button class="btn btn-share history-close" id="historyClose">Close</button>
       </div>
     </div>
 
