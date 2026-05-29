@@ -17,6 +17,10 @@
   const seenKeys = {};
   let pageOpenTime = 0;         /* set at boot — drives the "every 6s" live death counter */
   let deathTimer = null;
+  let heartbeatTimer = null;    /* (D) persistent 6s tick */
+  let flashbackShown = false;   /* (C) only flash once per kill scene */
+  let ambientEl = null;         /* (E) rainforest ambience bed */
+  let momentRAF = null;         /* (Moment) particle animation handle */
 
   /* ============ STORY DATA (JSON-driven) ============ */
   const WARM_LINES = [
@@ -25,7 +29,9 @@
     { text: { en: 'The water is still.', zh: '水面平静无波。' }, speed: 50, wait: 800 },
     { text: { en: 'She has two cubs.', zh: '她有两只幼崽。' }, speed: 50, wait: 700 },
     { text: { en: 'Mira, the older one. She loves to climb.', zh: '米拉，姐姐。她爱攀爬。' }, speed: 45, wait: 800 },
-    { text: { en: "Sol, the younger. He's afraid of the river.", zh: '索尔，弟弟。他怕河水。' }, speed: 45, wait: 800 },
+    { text: { en: "{cub}, the younger. He's afraid of the river.", zh: '{cub}，弟弟。他怕河水。' }, speed: 45, wait: 800 },
+    { text: { en: 'She nudges him to the water’s edge.', zh: '她把他轻轻推到水边。' }, speed: 50, wait: 700 },
+    { text: { en: 'He drinks at last — learning the river will not take him.', zh: '他终于喝上了水 —— 学着相信，河水不会带走他。' }, speed: 46, wait: 900 },
     { text: { en: 'Momo teaches them how to listen.', zh: '莫莫教它们如何倾听。' }, speed: 50, wait: 700 },
     { text: { en: 'How to wait. How to stay.', zh: '如何等待。如何留守。' }, speed: 55, wait: 1200 },
     { text: { en: "She doesn't know you're watching.", zh: '她不知道你正在窥视。' }, speed: 50, wait: 500 },
@@ -40,6 +46,8 @@
     'family.png',   /* She has two cubs.                          */
     'mira.png',     /* Mira, the older one. She loves to climb.   */
     'sol.png',      /* Sol, the younger. He's afraid of the river.*/
+    'sol.png',      /* She nudges him to the water's edge.        */
+    'sol.png',      /* He drinks at last.                         */
     'listen.png',   /* Momo teaches them how to listen.         */
     'listen.png',   /* How to wait. How to stay.                  */
     'watched.png',  /* She doesn't know you're watching.          */
@@ -70,12 +78,21 @@
 
   /* Scene 8 — the cubs left behind. Same rainforest, only the lone cub. */
   const CUB_LINES = [
-    { text: { en: 'Sol crossed the river. The one he was always afraid of.', zh: '索尔渡过了那条河 —— 他一直害怕的那条。' }, speed: 50, wait: 1500 },
+    { text: { en: '{cub} crossed the river. The one he was always afraid of.', zh: '{cub}渡过了那条河 —— 他一直害怕的那条。' }, speed: 50, wait: 1500 },
     { text: { en: 'No one was left to carry him across.', zh: '再没有谁能驮他过去了。' }, speed: 55, wait: 1800 },
     { text: { en: 'Mira climbed to the highest branch — the way her mother taught her.', zh: '米拉爬上了最高的枝头 —— 像母亲教过她的那样。' }, speed: 48, wait: 1500 },
     { text: { en: 'She watched the trees until dark. No one came.', zh: '她望着林子，直到天黑。没有人来。' }, speed: 52, wait: 2400, big: true },
   ];
   const CUB_BEATS = ['sol_river.png', 'sol_river.png', 'mira_tree.png', 'mira_tree.png'];
+
+  /* Scene 9 — where the skin goes (forest → market → wall). Echoes "it pays well". */
+  const PELT_LINES = [
+    { text: { en: 'Her skin was lifted from where she fell.', zh: '她的皮，从她倒下的地方被剥走。' }, speed: 50, wait: 1600 },
+    { text: { en: 'It was sold at a stall — beside the ivory, the cages.', zh: '它被卖到一个摊位 —— 挨着象牙，挨着鸟笼。' }, speed: 48, wait: 1600 },
+    { text: { en: 'Now it hangs on a wall, in a house she will never see.', zh: '如今它挂在一面墙上，在一座她永远见不到的房子里。' }, speed: 48, wait: 1800 },
+    { text: { en: 'It paid well.', zh: '它，确实卖了个好价钱。' }, speed: 70, wait: 2400, big: true },
+  ];
+  const PELT_BEATS = ['pelt_forest.png', 'pelt_market.png', 'pelt_wall.png', 'pelt_wall.png'];
 
   /* Scene 10 — guardian reframe (the replay's new identity) */
   const GUARD_LINES = [
@@ -85,6 +102,22 @@
   ];
   const GUARD_NEEDED = 3;
   let guardCount = 0;
+
+  /* Guardian replay — the full parallel walk (reuses existing backgrounds) */
+  const GUARD_WARM_LINES = [
+    { text: { en: 'Momo and her cubs are here — alive, the same as before.', zh: '莫莫和她的幼崽都在 —— 活着，和从前一样。' }, speed: 48, wait: 1500 },
+    { text: { en: 'Only this time, someone watches the tree line for them.', zh: '只是这一次，有人替它们守着林线。' }, speed: 50, wait: 1700 },
+  ];
+  const GUARD_HUNT_LINES = [
+    { text: { en: 'The hunter comes, the way he always does.', zh: '猎人来了，一如既往。' }, speed: 52, wait: 1400 },
+    { text: { en: 'This time you do not raise a rifle — you step into the clearing.', zh: '这一次，你没有举枪 —— 你走进了那片空地。' }, speed: 48, wait: 1600 },
+    { text: { en: 'You make yourself seen. You make him turn back.', zh: '你让自己被看见。你让他掉头离开。' }, speed: 50, wait: 1700 },
+  ];
+  const GUARD_END_LINES = [
+    { text: { en: 'The cubs grow. Sol learns the river; Mira learns the canopy.', zh: '幼崽长大了。索尔学会了河，米拉学会了树冠。' }, speed: 48, wait: 1600 },
+    { text: { en: 'Because someone stayed between them and the gun.', zh: '因为有人，一直挡在它们和枪口之间。' }, speed: 50, wait: 1800 },
+    { text: { en: 'Every six seconds, one is lost. But not this one. Not today.', zh: '每六秒，就有一个消逝。但不是这一只。不是今天。' }, speed: 52, wait: 2600, big: true },
+  ];
 
   /* ============ I18N (EN / 中文) ============ */
   let LANG = 'en';
@@ -100,7 +133,7 @@
       pressEnter: '[ Press Enter ]',
       learnMore: 'Learn more',
       share: 'Share',
-      shareMsg: 'Every 6 seconds, an animal dies because of us.',
+      shareMsg: 'I named a jaguar cub {cub}. Every 6 seconds, an animal dies because of us.',
       copied: 'Copied',
       references: 'References',
       worksCited: 'Works Cited',
@@ -111,7 +144,18 @@
       close: 'Close',
       openingTagline: "A story you shouldn't have opened.",
       skip: 'Skip',
-      counterTpl: 'Since you opened this page, <em class="fig">{n}</em> wild animals have been killed.',
+      defaultCub: 'Sol',
+      nameLabel: 'Give one of her cubs a name:',
+      namePlaceholder: 'Sol',
+      saveCard: 'Save the card',
+      cardStayed: 'You stayed {t}.',
+      cardKilled: 'In that time, an estimated {n} wild animals were killed.',
+      cardNamed: 'You gave one of them a name: {cub}.',
+      cardClosing: 'Not without you.',
+      momentLine: 'Remember this green.',
+      momentLine2: "It won't be green when you come back.",
+      counterTpl: 'Since you opened this page, an estimated <em class="fig">{n}</em> wild animals have been killed for human use.',
+      counterNote: 'An illustrative estimate (one every 6 seconds), drawn from documented annual tolls: up to 2.7M pangolins, ~20,000 elephants, 1,000+ rhinos and countless more. — <a href="https://www.awf.org/blog/27-million-pangolins-are-poached-every-year-scales-and-meat" target="_blank" rel="noopener">AWF</a>',
       choicePrompt: 'She still hasn\'t seen you.',
       waitBtn: 'Wait',
       shootBtn: 'Shoot',
@@ -119,7 +163,8 @@
       guardianBtn: 'Walk it again, as a guardian',
       guardHint: 'Move to aim  ·  click to shield each one',
       guardResolve: 'They live. This time, they live.',
-      returnBtn: 'Return',
+      returnBtn: 'Continue',
+      citeJaguar: 'Jaguars are trafficked for their skins, teeth & skulls — <a href="https://cites.org/eng/CITES_study_illegal_trade_poaching_jaguar_pantheraonca_2112021" target="_blank" rel="noopener">CITES study, 2021</a>',
       hints: {
         intro: 'Click anywhere to continue',
         0: 'Click  ENTER  to begin',
@@ -131,11 +176,16 @@
         6: 'Click  BACK  to return',
         7: 'Make your choice',
         8: 'Click anywhere to continue',
+        9: 'Click anywhere to continue',
         10: 'Click anywhere to continue',
         11: 'Move to aim  ·  click to shield each one',
+        12: 'Click anywhere to continue',
+        13: 'Click anywhere to continue',
+        14: 'Click anywhere to continue',
+        16: 'Take it in  ·  click when you are ready',
       },
       hintPressEnter: 'Press  ENTER  to continue',
-      sceneNames: { intro: 'Introduction', 0: 'Warning', 1: 'Warmth', 2: 'The Hunter', 7: 'The Choice', 3: 'The Shot', 4: 'Aftermath', 8: 'The Cubs', 5: 'The Truth', 6: 'Sources', 10: 'The Guardian', 11: 'Protect' },
+      sceneNames: { intro: 'Introduction', 0: 'Warning', 1: 'Warmth', 16: 'The Moment', 2: 'The Hunter', 7: 'The Choice', 3: 'The Shot', 4: 'Aftermath', 8: 'The Cubs', 9: 'The Skin', 5: 'The Truth', 6: 'Sources', 10: 'The Guardian', 12: 'Watch', 13: 'Step In', 11: 'Protect', 14: 'They Live' },
       sceneDesc: { intro: 'Before you begin', 0: 'Content warning', 7: 'A choice that was never yours', 3: 'The hunt — you pull the trigger', 5: 'The truth & the data', 6: 'Works cited', 10: 'Walk it again, as a guardian', 11: 'You shield them' },
       reveal: {
         l1: 'Momo is not real.',
@@ -173,7 +223,7 @@
       pressEnter: '[ 按 Enter 继续 ]',
       learnMore: '了解更多',
       share: '分享',
-      shareMsg: '每 6 秒，就有一只动物因我们而死。',
+      shareMsg: '我给一只美洲豹幼崽起名叫 {cub}。每 6 秒，就有一只动物因我们而死。',
       copied: '已复制',
       references: '参考文献',
       worksCited: '参考文献',
@@ -184,7 +234,18 @@
       close: '关闭',
       openingTagline: '一个你本不该打开的故事。',
       skip: '跳过',
-      counterTpl: '自你打开此页，已有 <em class="fig">{n}</em> 个野生生命被杀死。',
+      defaultCub: '索尔',
+      nameLabel: '给她的一只幼崽起个名字：',
+      namePlaceholder: '索尔',
+      saveCard: '保存结局卡',
+      cardStayed: '你在这里停留了 {t}。',
+      cardKilled: '这期间，估计有 {n} 个野生生命被杀死。',
+      cardNamed: '你给其中一只起名叫 {cub}。',
+      cardClosing: '没有你，就不够。',
+      momentLine: '记住这片绿。',
+      momentLine2: '等你回来，它就不绿了。',
+      counterTpl: '自你打开此页，估计已有 <em class="fig">{n}</em> 个野生生命因人类而死。',
+      counterNote: '示意性估算（按每 6 秒一只），依据已记录的年度数字：穿山甲高达 270 万、大象约 2 万、犀牛 1000+，以及无数其他。— <a href="https://www.awf.org/blog/27-million-pangolins-are-poached-every-year-scales-and-meat" target="_blank" rel="noopener">AWF</a>',
       choicePrompt: '她还没有发现你。',
       waitBtn: '等待',
       shootBtn: '开枪',
@@ -192,7 +253,8 @@
       guardianBtn: '以守护者身份，重走一遍',
       guardHint: '移动瞄准  ·  点击护住每一只',
       guardResolve: '它们活了下来。这一次，它们活了下来。',
-      returnBtn: '返回',
+      returnBtn: '继续',
+      citeJaguar: '美洲豹因皮、牙、头骨遭非法贩运 — <a href="https://cites.org/eng/CITES_study_illegal_trade_poaching_jaguar_pantheraonca_2112021" target="_blank" rel="noopener">CITES 研究，2021</a>',
       hints: {
         intro: '点击任意处继续',
         0: '点击「进入」开始',
@@ -204,11 +266,16 @@
         6: '点击「返回」',
         7: '做出你的选择',
         8: '点击任意处继续',
+        9: '点击任意处继续',
         10: '点击任意处继续',
         11: '移动瞄准  ·  点击护住每一只',
+        12: '点击任意处继续',
+        13: '点击任意处继续',
+        14: '点击任意处继续',
+        16: '好好看看它  ·  准备好了再点',
       },
       hintPressEnter: '按  ENTER  继续',
-      sceneNames: { intro: '序', 0: '警告', 1: '温暖', 2: '猎人', 7: '选择', 3: '那一枪', 4: '余波', 8: '幼崽', 5: '真相', 6: '来源', 10: '守护者', 11: '守护' },
+      sceneNames: { intro: '序', 0: '警告', 1: '温暖', 16: '凝住的一刻', 2: '猎人', 7: '选择', 3: '那一枪', 4: '余波', 8: '幼崽', 9: '那张皮', 5: '真相', 6: '来源', 10: '守护者', 12: '守望', 13: '挺身', 11: '守护', 14: '它们活着' },
       sceneDesc: { intro: '开始之前', 0: '内容警告', 7: '一个从来不属于你的选择', 3: '狩猎 —— 你扣下扳机', 5: '真相与数据', 6: '参考文献', 10: '以守护者身份，重走一遍', 11: '你护住它们' },
       reveal: {
         l1: '莫莫并不存在。',
@@ -240,7 +307,12 @@
   };
 
   const t = (key) => (I18N[LANG] && I18N[LANG][key] != null ? I18N[LANG][key] : I18N.en[key]);
-  const lineText = (line) => (line && typeof line.text === 'object' ? (line.text[LANG] || line.text.en) : (line ? line.text : ''));
+  let cubNameCustom = '';   /* player-chosen cub name (A); empty = use default */
+  const getCubName = () => (cubNameCustom || t('defaultCub'));
+  function lineText(line) {
+    let s = (line && typeof line.text === 'object') ? (line.text[LANG] || line.text.en) : (line ? line.text : '');
+    return s.replace(/\{cub\}/g, getCubName());
+  }
   function hintFor(scene) {
     if (scene === 3 && floodDone) return t('hintPressEnter');
     return I18N[LANG].hints[scene];
@@ -389,22 +461,28 @@
   }
 
   function enterScene(id) {
+    document.body.classList.toggle('pure', id === 16);   /* wordless image hides all UI */
     setHint(hintFor(id), id === 3);
     /* scenes without per-line narration are logged as a single beat */
-    if (id === 'intro' || id === 0 || id === 3 || id === 5 || id === 6 || id === 7 || id === 11) recordBeat(id, -1, '');
+    if (id === 'intro' || id === 0 || id === 3 || id === 5 || id === 6 || id === 7 || id === 11 || id === 16) recordBeat(id, -1, '');
     switch (id) {
       case 'intro': enterIntro(); break;
       case 0: enterHorror();     break;
       case 1: enterWarm();       break;
+      case 16: enterMoment();    break;
       case 2: enterHunter();     break;
       case 7: enterChoice();     break;
       case 3: enterKill();       break;
       case 4: enterAftermath();  break;
       case 8: enterCub();        break;
+      case 9: enterPelt();       break;
       case 5: enterReveal();     break;
       case 6: /* references — static */ break;
       case 10: enterGuardianIntro(); break;
+      case 12: enterGuardWarm();  break;
+      case 13: enterGuardHunt();  break;
       case 11: enterGuardian();  break;
+      case 14: enterGuardEnd();   break;
     }
   }
 
@@ -769,8 +847,15 @@
     }
     if (myToken !== playToken) return;
     await delay(300);
+    const nm = $('#introName');
+    if (nm) { nm.classList.remove('hidden'); await delay(20); nm.classList.add('show'); }
     $('#promptIntro').classList.remove('hidden');
     canInteract = true;
+  }
+
+  function captureCubName() {
+    const inp = $('#cubNameInput');
+    if (inp && inp.value.trim()) cubNameCustom = inp.value.trim().slice(0, 14);
   }
 
   /* ============ SCENE 1: WARM STORIES (9 lines) ============ */
@@ -794,6 +879,7 @@
 
   function enterWarm() {
     lineIdx = 0;
+    startAmbient();   /* (E) rainforest bed begins */
 
     /* reset the two background layers to the opening beat (no fade) */
     const a = $('#bg1'), b = $('#bg1b');
@@ -832,6 +918,7 @@
 
   function enterHunter() {
     lineIdx = 0;
+    startAmbient();   /* (E) forest continues into the hunter scene */
 
     /* one-shot jaguar roar marks the predator's arrival (replaces drone) */
     playRoar();
@@ -858,6 +945,8 @@
   async function enterKill() {
     killCount = 0;
     floodDone = false;
+    flashbackShown = false;   /* (C) arm the pre-shot flashback again */
+    startAmbient();           /* (E) forest plays until the shot cuts it */
     $('#bloodLayer').innerHTML = '';
     $('#bloodFlood').innerHTML = '';
 
@@ -906,13 +995,29 @@
 
   function handleKill(e) {
     if (!canInteract || killCount >= KILLS_NEEDED) return;
+    const cx = e.clientX, cy = e.clientY;
+    /* (C) the first trigger-pull: she looks up at you — one flash, then the shot */
+    if (!flashbackShown) {
+      flashbackShown = true;
+      canInteract = false;
+      showFlashback();
+      setTimeout(() => { canInteract = true; doShot(cx, cy); }, 720);
+      return;
+    }
+    doShot(cx, cy);
+  }
+
+  function doShot(cx, cy) {
+    if (!canInteract || killCount >= KILLS_NEEDED) return;
+
+    stopAmbient();   /* (E) the gunshot cuts the forest to silence */
 
     /* every shot fires the gun — feedback even on a miss */
     fireGun();
     recoilShake();
     playGunshot();
 
-    const target = targetUnderPoint(e.clientX, e.clientY);
+    const target = targetUnderPoint(cx, cy);
     if (!target) {
       /* missed — short lockout, no kill */
       canInteract = false;
@@ -956,6 +1061,7 @@
   /* ============ SCENE 4: AFTERMATH (6 lines, darkens) ============ */
   function enterAftermath() {
     stopDrone();
+    stopAmbient();   /* (E) ensure the silence holds */
     lineIdx = 0;
 
     const bg = $('#bg4');
@@ -1007,8 +1113,44 @@
       lines: CUB_LINES,
       panel: '#textPanel8',
       prompt: '#prompt8',
-      nextScene: 5,
+      nextScene: 9,
       onAdvance: function (idx) { setCubBeat(idx); },
+    };
+    playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
+  }
+
+  /* ============ SCENE 9: WHERE THE SKIN GOES ============ */
+  let peltShownIsB = false;
+  let peltCurrentBeat = '';
+
+  function setPeltBeat(idx) {
+    const file = PELT_BEATS[idx];
+    if (!file || file === peltCurrentBeat) return;
+    peltCurrentBeat = file;
+    const a = $('#bg9'), b = $('#bg9b');
+    const incoming = peltShownIsB ? a : b;
+    const outgoing = peltShownIsB ? b : a;
+    incoming.style.backgroundImage = "url('images/pelt/" + file + "')";
+    incoming.style.opacity = '1';
+    outgoing.style.opacity = '0';
+    peltShownIsB = !peltShownIsB;
+  }
+  function setPeltLayerInstant(idx) {
+    const a = $('#bg9'), b = $('#bg9b');
+    peltShownIsB = false; peltCurrentBeat = PELT_BEATS[idx];
+    a.style.backgroundImage = "url('images/pelt/" + PELT_BEATS[idx] + "')";
+    a.style.opacity = '1'; b.style.opacity = '0';
+  }
+
+  function enterPelt() {
+    lineIdx = 0;
+    setPeltLayerInstant(0);
+    textCtx = {
+      lines: PELT_LINES,
+      panel: '#textPanel9',
+      prompt: '#prompt9',
+      nextScene: 5,
+      onAdvance: function (idx) { setPeltBeat(idx); },
     };
     playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
   }
@@ -1020,9 +1162,26 @@
       lines: GUARD_LINES,
       panel: '#textPanel10',
       prompt: '#prompt10',
-      nextScene: 11,
+      nextScene: 12,
       onAdvance: null,
     };
+    playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
+  }
+
+  /* Guardian narration beats reuse existing backgrounds (set in CSS) */
+  function enterGuardWarm() {
+    lineIdx = 0;
+    textCtx = { lines: GUARD_WARM_LINES, panel: '#textPanel12', prompt: '#prompt12', nextScene: 13, onAdvance: null };
+    playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
+  }
+  function enterGuardHunt() {
+    lineIdx = 0;
+    textCtx = { lines: GUARD_HUNT_LINES, panel: '#textPanel13', prompt: '#prompt13', nextScene: 11, onAdvance: null };
+    playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
+  }
+  function enterGuardEnd() {
+    lineIdx = 0;
+    textCtx = { lines: GUARD_END_LINES, panel: '#textPanel14', prompt: '#prompt14', nextScene: 5, onAdvance: null };
     playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
   }
 
@@ -1094,16 +1253,197 @@
     if (!el) return;
     el.innerHTML = t('counterTpl').replace('{n}', deathCount().toLocaleString());
   }
+  function renderCounterNote() {
+    const note = $('#deathCounterNote');
+    if (note) note.innerHTML = t('counterNote');
+  }
   function startDeathCounter() {
     renderDeathCounter();
+    renderCounterNote();
     const el = $('#deathCounter');
     if (el) el.classList.add('show');
+    const note = $('#deathCounterNote');
+    if (note) note.classList.add('show');
     if (deathTimer) clearInterval(deathTimer);
     deathTimer = setInterval(renderDeathCounter, 1000);
   }
 
+  /* ============ (D) PERSISTENT 6-SECOND HEARTBEAT ============ */
+  function playTick() {
+    if (!audioCtx) return;
+    try {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.028, audioCtx.currentTime + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + 0.14);
+    } catch (_) {}
+  }
+  function tickHeartbeat() {
+    const hb = $('#heartbeat');
+    if (!hb) return;
+    $('#hbNum').textContent = deathCount();
+    hb.classList.remove('tick'); void hb.offsetWidth; hb.classList.add('tick');
+    playTick();
+  }
+  function startHeartbeat() {
+    const hb = $('#heartbeat');
+    if (hb) { $('#hbNum').textContent = deathCount(); hb.classList.add('show'); }
+    if (heartbeatTimer) clearInterval(heartbeatTimer);
+    heartbeatTimer = setInterval(tickHeartbeat, 6000);
+  }
+
+  /* ============ (C) PRE-SHOT FLASHBACK ============ */
+  function showFlashback() {
+    const fb = $('#flashback');
+    if (!fb) return;
+    fb.classList.add('show');
+    setTimeout(() => fb.classList.remove('show'), 600);
+  }
+
+  /* ============ (E) RAINFOREST AMBIENCE (cut by the shot) ============ */
+  function fadeAudio(el, target, ms) {
+    if (!el) return;
+    const steps = 12, dt = Math.max(20, ms / steps), start = el.volume, diff = target - start;
+    let i = 0;
+    const iv = setInterval(() => {
+      i++;
+      el.volume = Math.max(0, Math.min(1, start + diff * (i / steps)));
+      if (i >= steps) clearInterval(iv);
+    }, dt);
+  }
+  function startAmbient() {
+    try {
+      if (!ambientEl) { ambientEl = new Audio('sounds/rainforest.mp3'); ambientEl.loop = true; ambientEl.volume = 0; }
+      if (ambientEl.paused) { const p = ambientEl.play(); if (p && p.catch) p.catch(() => {}); }
+      fadeAudio(ambientEl, 0.26, 1400);
+    } catch (_) {}
+  }
+  function stopAmbient() {           /* abrupt = the silence after the shot */
+    if (ambientEl) { try { ambientEl.pause(); } catch (_) {} }
+  }
+
+  /* ============ (B) SHAREABLE ENDING CARD (canvas PNG) ============ */
+  function fmtTime(sec) {
+    const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  function drawPaw(x, cx, cy, r) {
+    x.save();
+    x.fillStyle = 'rgba(229,194,130,0.85)';
+    x.beginPath(); x.ellipse(cx, cy + r * 0.55, r * 0.95, r * 0.75, 0, 0, Math.PI * 2); x.fill();
+    [[-1.15, -0.85, 0.42], [-0.42, -1.3, 0.48], [0.42, -1.3, 0.48], [1.15, -0.85, 0.42]].forEach((t) => {
+      x.beginPath(); x.ellipse(cx + t[0] * r, cy + t[1] * r, r * t[2], r * t[2] * 1.25, 0, 0, Math.PI * 2); x.fill();
+    });
+    x.restore();
+  }
+  function makeCard() {
+    const W = 1200, H = 630;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d');
+    x.fillStyle = '#0d0e10'; x.fillRect(0, 0, W, H);
+    const g = x.createRadialGradient(W / 2, H * 0.4, 40, W / 2, H * 0.4, W * 0.72);
+    g.addColorStop(0, 'rgba(26,36,31,0.65)'); g.addColorStop(1, 'rgba(8,9,11,1)');
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    x.strokeStyle = 'rgba(229,194,130,0.5)'; x.lineWidth = 2; x.strokeRect(28, 28, W - 56, H - 56);
+
+    x.textAlign = 'center';
+    x.fillStyle = '#f3ece0';
+    x.font = '700 62px Georgia, "Songti SC", serif';
+    x.fillText('EVERY 6 SECONDS', W / 2, 142);
+    x.strokeStyle = 'rgba(229,194,130,0.7)'; x.lineWidth = 1;
+    x.beginPath(); x.moveTo(W / 2 - 120, 176); x.lineTo(W / 2 + 120, 176); x.stroke();
+
+    const elapsed = pageOpenTime ? (Date.now() - pageOpenTime) / 1000 : 0;
+    const lines = [
+      t('cardStayed').replace('{t}', fmtTime(elapsed)),
+      t('cardKilled').replace('{n}', deathCount().toLocaleString()),
+      t('cardNamed').replace('{cub}', getCubName()),
+    ];
+    x.fillStyle = '#d8d2c7'; x.font = '32px Georgia, "Songti SC", serif';
+    let y = 268;
+    lines.forEach((ln) => { x.fillText(ln, W / 2, y); y += 60; });
+
+    drawPaw(x, W / 2, 478, 24);
+
+    x.fillStyle = '#c0392b'; x.font = 'italic 26px Georgia, "Songti SC", serif';
+    x.fillText(t('cardClosing'), W / 2, 552);
+    x.fillStyle = '#7d766b'; x.font = '18px "Courier New", monospace';
+    x.fillText('every-six-seconds.vercel.app', W / 2, H - 56);
+
+    try {
+      const a = document.createElement('a');
+      a.href = c.toDataURL('image/png');
+      a.download = 'every-six-seconds.png';
+      a.click();
+    } catch (_) {}
+  }
+
+  /* ============ SCENE 16: "THE MOMENT" — living tableau ============ */
+  function setMomentTitle() {
+    const el = $('#momentLine');
+    if (!el) return;
+    el.innerHTML =
+      '<span class="ml-a">' + t('momentLine') + '</span>' +
+      '<span class="ml-b">' + t('momentLine2') + '</span>';
+  }
+
+  function startMomentParticles() {
+    const cv = $('#momentCanvas');
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    const resize = () => { cv.width = window.innerWidth; cv.height = window.innerHeight; };
+    resize();
+    if (!window.__momentResize) {
+      window.__momentResize = true;
+      window.addEventListener('resize', () => { if (currentScene === 16) resize(); });
+    }
+    const N = 80, ps = [];
+    for (let i = 0; i < N; i++) {
+      const fire = Math.random() < 0.22;
+      ps.push({
+        x: Math.random() * cv.width, y: Math.random() * cv.height,
+        r: fire ? (1.8 + Math.random() * 2.4) : (0.6 + Math.random() * 1.6),
+        vx: (Math.random() - 0.5) * 0.3, vy: -(0.08 + Math.random() * 0.4),
+        a: Math.random() * Math.PI * 2, tw: 0.4 + Math.random() * 1.6, fire: fire,
+      });
+    }
+    if (momentRAF) cancelAnimationFrame(momentRAF);
+    function frame(ts) {
+      if (currentScene !== 16) { ctx.clearRect(0, 0, cv.width, cv.height); momentRAF = null; return; }
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      const tt = ts * 0.001;
+      for (const p of ps) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.y < -12) { p.y = cv.height + 12; p.x = Math.random() * cv.width; }
+        if (p.x < -12) p.x = cv.width + 12; else if (p.x > cv.width + 12) p.x = -12;
+        const tw = 0.5 + 0.5 * Math.sin(tt * p.tw + p.a);
+        const alpha = (p.fire ? 0.9 : 0.45) * tw;
+        const rr = p.r * (p.fire ? (1 + 0.5 * tw) : 1) * 4;
+        const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rr);
+        grd.addColorStop(0, 'rgba(255,238,185,' + alpha + ')');
+        grd.addColorStop(0.4, 'rgba(229,194,130,' + (alpha * 0.5) + ')');
+        grd.addColorStop(1, 'rgba(229,194,130,0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath(); ctx.arc(p.x, p.y, rr, 0, Math.PI * 2); ctx.fill();
+      }
+      momentRAF = requestAnimationFrame(frame);
+    }
+    momentRAF = requestAnimationFrame(frame);
+  }
+
+  function enterMoment() {
+    /* pure wordless image: no text, no UI (hidden via body.pure). Let it land,
+       give them time to sit with it / screenshot, then a click reveals the CTA. */
+    canInteract = false;
+    setTimeout(() => { if (currentScene === 16) canInteract = true; }, 1400);
+  }
+
   /* ============ SCENE 7: THE CHOICE (illusory) ============ */
   function enterChoice() {
+    startAmbient();   /* (E) forest still alive during the false choice */
     const sc = $('#scene-7');
     if (sc) sc.classList.remove('committed');
     const buttons = $('#choiceButtons');
@@ -1233,11 +1573,13 @@
     /* "Not without you." — big, lingers */
     panel.classList.add('text-big');
     await typewrite(panel, R.notWithout, 65);
-    await delay(2500);
+    await delay(2800);
+    if (myToken !== playToken) return;
 
-    /* Show CTA buttons */
-    ctaButtons.style.opacity = '1';
+    /* close on the wordless image; the CTA waits behind it (revisited on click) */
     revealComplete = true;
+    ctaButtons.style.opacity = '1';   /* readied for when they return from the image */
+    goTo(16);
   }
 
   /* ============ HISTORY / REWIND ============ */
@@ -1257,8 +1599,12 @@
     1: { lines: WARM_LINES, panel: '#textPanel1', prompt: '#prompt1', nextScene: 2, onAdvance: setWarmBeat },
     2: { lines: HUNTER_LINES, panel: '#textPanel2', prompt: '#prompt2', nextScene: 7, onAdvance: setHunterBeat },
     4: { lines: AFTERMATH_LINES, panel: '#textPanel4', prompt: '#prompt4', nextScene: 8, onAdvance: setAftermathFilterFor },
-    8: { lines: CUB_LINES, panel: '#textPanel8', prompt: '#prompt8', nextScene: 5, onAdvance: setCubBeat },
-    10: { lines: GUARD_LINES, panel: '#textPanel10', prompt: '#prompt10', nextScene: 11, onAdvance: null },
+    8: { lines: CUB_LINES, panel: '#textPanel8', prompt: '#prompt8', nextScene: 9, onAdvance: setCubBeat },
+    9: { lines: PELT_LINES, panel: '#textPanel9', prompt: '#prompt9', nextScene: 5, onAdvance: setPeltBeat },
+    10: { lines: GUARD_LINES, panel: '#textPanel10', prompt: '#prompt10', nextScene: 12, onAdvance: null },
+    12: { lines: GUARD_WARM_LINES, panel: '#textPanel12', prompt: '#prompt12', nextScene: 13, onAdvance: null },
+    13: { lines: GUARD_HUNT_LINES, panel: '#textPanel13', prompt: '#prompt13', nextScene: 11, onAdvance: null },
+    14: { lines: GUARD_END_LINES, panel: '#textPanel14', prompt: '#prompt14', nextScene: 5, onAdvance: null },
   };
 
   /* Instant (no-fade) setters used when rewinding into a scene. */
@@ -1301,6 +1647,7 @@
     else if (scene === 2) setHunterLayerInstant(startLine);
     else if (scene === 4) setAftermathFilterFor(startLine);
     else if (scene === 8) setCubLayerInstant(startLine);
+    else if (scene === 9) setPeltLayerInstant(startLine);
 
     textCtx = { lines: cfg.lines, panel: cfg.panel, prompt: cfg.prompt, nextScene: cfg.nextScene, onAdvance: cfg.onAdvance };
 
@@ -1323,7 +1670,7 @@
     showSceneInstant(beat.scene);
     setHint(hintFor(beat.scene), beat.scene === 3);
 
-    if (beat.scene === 1 || beat.scene === 2 || beat.scene === 4 || beat.scene === 8 || beat.scene === 10) {
+    if ([1, 2, 4, 8, 9, 10, 12, 13, 14].indexOf(beat.scene) !== -1) {
       startNarrationAt(beat.scene, beat.lineIdx);
     } else {
       enterScene(beat.scene);    /* 0/3/5/6 simply re-enter */
@@ -1363,6 +1710,38 @@
     $('#historyPanel').classList.remove('open');
   }
 
+  /* ============ DEVELOPER SCENE-JUMP ============ */
+  const DEV_SCENES = ['intro', 0, 1, 2, 7, 3, 4, 8, 9, 5, 6, 10, 12, 13, 11, 14];
+  function buildDevList() {
+    const list = $('#devList');
+    if (!list) return;
+    list.innerHTML = '';
+    DEV_SCENES.forEach((id) => {
+      const b = document.createElement('button');
+      b.className = 'dev-item';
+      const name = (I18N[LANG].sceneNames[id]) || ('Scene ' + id);
+      b.innerHTML = '<span class="dev-id">' + id + '</span>' + name;
+      b.addEventListener('click', (e) => { e.stopPropagation(); devJump(id); });
+      list.appendChild(b);
+    });
+  }
+  function openDevPanel() { buildDevList(); $('#devPanel').classList.add('open'); }
+  function closeDevPanel() { $('#devPanel').classList.remove('open'); }
+
+  /* Jump straight to the start of any scene (resets interactive ones) */
+  function devJump(scene) {
+    closeDevPanel();
+    closeHistory();
+    playToken++;
+    isTransitioning = false;
+    canInteract = false;
+    floodDone = false;
+    revealComplete = false;
+    stopDrone();
+    showSceneInstant(scene);
+    enterScene(scene);
+  }
+
   /* ============ LANGUAGE (EN / 中文) ============ */
   function setTxt(sel, val) { const e = $(sel); if (e) e.textContent = val; }
 
@@ -1374,9 +1753,17 @@
     setTxt('#prompt2', t('clickContinue'));
     setTxt('#prompt4', t('clickContinue'));
     setTxt('#prompt8', t('clickContinue'));
+    setTxt('#prompt9', t('clickContinue'));
+    setTxt('#prompt12', t('clickContinue'));
+    setTxt('#prompt13', t('clickContinue'));
+    setTxt('#prompt14', t('clickContinue'));
+    setTxt('#prompt16', t('clickContinue'));
     setTxt('#promptIntro', t('clickContinue'));
+    setTxt('#cubNameLabel', t('nameLabel'));
+    const ci = $('#cubNameInput'); if (ci) ci.placeholder = t('namePlaceholder');
     setTxt('#btnLearn', t('learnMore'));
     setTxt('#btnShare', t('share'));
+    setTxt('#btnCard', t('saveCard'));
     setTxt('#btnRefs', t('references'));
     setTxt('#btnWait', t('waitBtn'));
     setTxt('#btnShoot', t('shootBtn'));
@@ -1391,6 +1778,7 @@
     setTxt('.history-btn-label', t('rewind'));
     setTxt('#openingTagline', t('openingTagline'));
     setTxt('#openingSkip', t('skip'));
+    const c9 = $('#cite9'); if (c9) c9.innerHTML = t('citeJaguar');
     document.documentElement.setAttribute('lang', LANG === 'zh' ? 'zh' : 'en');
     $$('.lang-opt').forEach((b) => b.classList.toggle('active', b.dataset.lang === LANG));
   }
@@ -1432,8 +1820,12 @@
       if (gr && gr.classList.contains('show')) gr.textContent = t('guardResolve');
     }
 
+    /* the living-tableau title (with the cub's name) */
+    if (currentScene === 16) setMomentTitle();
+
     /* keep the live counter in the current language */
     renderDeathCounter();
+    renderCounterNote();
   }
 
   /* ============ OPENING SPLASH (original, Genshin-style title reveal) ============ */
@@ -1471,8 +1863,7 @@
       }
     }
 
-    /* best-effort chime (may be blocked until first gesture) */
-    try { initAudio(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); playChime(); } catch (_) {}
+    /* (no sound — silent logo splash) */
 
     let ended = false;
     const finish = () => {
@@ -1481,7 +1872,7 @@
       op.classList.add('done');
       setTimeout(() => { op.style.display = 'none'; }, 2100);   /* match the 2s out-fade */
     };
-    const timer = setTimeout(finish, 8200);   /* hold the title before the long fade */
+    const timer = setTimeout(finish, 9500);   /* logo lands ~4.5s, holds, then fades */
     const skip = $('#openingSkip');
     if (skip) skip.addEventListener('click', (e) => { e.stopPropagation(); clearTimeout(timer); finish(); });
     op.addEventListener('click', () => { clearTimeout(timer); finish(); });
@@ -1496,12 +1887,23 @@
       goTo('intro');
     });
 
-    /* Introduction -> Scene 1 */
+    /* Introduction -> Scene 1 (name a cub on the way) */
     $('#scene-intro').addEventListener('click', (e) => {
       if (currentScene !== 'intro') return;
       if (e.target.closest('.btn')) return;
+      if (e.target.closest('.intro-name')) return;   /* don't advance while naming */
       if (!canInteract) return;
+      captureCubName();
       goTo(1);
+    });
+    const cubInput = $('#cubNameInput');
+    if (cubInput) cubInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && currentScene === 'intro' && canInteract) {
+        e.preventDefault();
+        captureCubName();
+        cubInput.blur();
+        goTo(1);
+      }
     });
 
     /* Scene 1: warm text — click to advance lines */
@@ -1509,6 +1911,13 @@
       if (currentScene !== 1) return;
       if (e.target.closest('.btn')) return;
       advanceText();
+    });
+
+    /* Scene 16: wordless closing image — click to reveal the closing actions */
+    $('#scene-16').addEventListener('click', () => {
+      if (currentScene !== 16) return;
+      if (!canInteract) return;
+      goTo(5);
     });
 
     /* Scene 2: hunter text — click to advance lines */
@@ -1546,6 +1955,13 @@
       advanceText();
     });
 
+    /* Scene 9: where the skin goes — click to advance lines */
+    $('#scene-9').addEventListener('click', (e) => {
+      if (currentScene !== 9) return;
+      if (e.target.closest('.btn')) return;
+      advanceText();
+    });
+
     /* Enter key — advance from blood flood to aftermath */
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && currentScene === 3 && floodDone) {
@@ -1561,6 +1977,10 @@
     const backRefsBtn = $('#btnBackFromRefs');
     if (backRefsBtn) backRefsBtn.addEventListener('click', () => goTo(5));
 
+    /* (B) shareable ending card */
+    const cardBtn = $('#btnCard');
+    if (cardBtn) cardBtn.addEventListener('click', (e) => { e.stopPropagation(); makeCard(); });
+
     /* Guardian replay branch */
     const guardianBtn = $('#btnGuardian');
     if (guardianBtn) guardianBtn.addEventListener('click', () => goTo(10));
@@ -1572,13 +1992,20 @@
     $('#scene-11').addEventListener('click', handleProtect);
     $('#scene-11').addEventListener('mousemove', handleGuardMove);
     const guardReturn = $('#btnGuardReturn');
-    if (guardReturn) guardReturn.addEventListener('click', (e) => { e.stopPropagation(); goTo(5); });
+    if (guardReturn) guardReturn.addEventListener('click', (e) => { e.stopPropagation(); goTo(14); });
+    [12, 13, 14].forEach((n) => {
+      $('#scene-' + n).addEventListener('click', (e) => {
+        if (currentScene !== n) return;
+        if (e.target.closest('.btn')) return;
+        advanceText();
+      });
+    });
 
     /* Share button */
     const shareBtn = $('#btnShare');
     if (shareBtn) {
       shareBtn.addEventListener('click', () => {
-        const msg = t('shareMsg');
+        const msg = t('shareMsg').replace('{cub}', getCubName());
         if (navigator.share) {
           navigator.share({ title: 'Every 6 Seconds', text: msg, url: location.href });
         } else {
@@ -1605,6 +2032,19 @@
     const histClose = $('#historyClose');
     if (histClose) histClose.addEventListener('click', (e) => { e.stopPropagation(); closeHistory(); });
 
+    /* Developer scene-jump: toggle with ` , close with Esc */
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '`' || e.code === 'Backquote' || e.key === '·') {
+        e.preventDefault();
+        const p = $('#devPanel');
+        if (p.classList.contains('open')) closeDevPanel(); else openDevPanel();
+      } else if (e.key === 'Escape') {
+        closeDevPanel();
+      }
+    });
+    const devPanel = $('#devPanel');
+    if (devPanel) devPanel.addEventListener('click', (e) => { if (e.target.id === 'devPanel') closeDevPanel(); });
+
     /* start the "every 6 seconds" clock the moment the page is open */
     pageOpenTime = Date.now();
 
@@ -1617,6 +2057,9 @@
 
     /* Opening splash, then the 16+ page underneath */
     runOpening();
+
+    /* (D) the every-6-seconds heartbeat runs for the whole experience */
+    startHeartbeat();
 
     /* boot */
     enterScene(0);

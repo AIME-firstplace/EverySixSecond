@@ -20,11 +20,12 @@
       <div class="opening-bg"></div>
       <div class="opening-particles" id="openingParticles"></div>
       <div class="opening-center">
-        <div class="opening-sweep"></div>
-        <h1 class="opening-title">EVERY 6 SECONDS</h1>
+        <div class="opening-blood-mark"></div>
+        <h1 class="opening-title" data-title="EVERY 6 SECONDS">EVERY 6 SECONDS</h1>
         <div class="opening-rule"></div>
         <p class="opening-tagline" id="openingTagline">A story you shouldn't have opened.</p>
       </div>
+      <div class="opening-flash"></div>
       <button class="opening-skip" id="openingSkip">Skip</button>
     </div>
 
@@ -52,6 +53,10 @@
       <div class="scene-bg intro-bg"></div>
       <div class="scene-inner intro-inner">
         <div class="intro-body" id="introBody"></div>
+        <div class="intro-name hidden" id="introName">
+          <label for="cubNameInput" id="cubNameLabel">Give one of her cubs a name:</label>
+          <input type="text" id="cubNameInput" maxlength="14" autocomplete="off" spellcheck="false" placeholder="Sol">
+        </div>
         <div class="prompt hidden" id="promptIntro">Click to continue</div>
       </div>
     </div>
@@ -64,6 +69,12 @@
         <div class="text-panel warm-text" id="textPanel1"></div>
         <div class="prompt hidden" id="prompt1">Click to continue</div>
       </div>
+    </div>
+
+    <!-- ========== SCENE 16: THE MOMENT (cinematic living tableau) ========== -->
+    <!-- Wordless closing image (pure, no text, no UI — made to be screenshotted) -->
+    <div class="scene" id="scene-16">
+      <div class="scene-bg moment-bg" id="bg16"></div>
     </div>
 
     <!-- ========== SCENE 2: HUNTER TRANSITION (3 lines) ========== -->
@@ -149,17 +160,30 @@
       </div>
     </div>
 
+    <!-- ========== SCENE 9: WHERE THE SKIN GOES ========== -->
+    <div class="scene" id="scene-9">
+      <div class="scene-bg" id="bg9"></div>
+      <div class="scene-bg" id="bg9b"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel9"></div>
+        <div class="scene-cite" id="cite9"></div>
+        <div class="prompt hidden" id="prompt9">Click to continue</div>
+      </div>
+    </div>
+
     <!-- ========== SCENE 5: REVEAL + DATA + CTA ========== -->
     <div class="scene" id="scene-5">
       <div class="scene-bg" id="bg5"></div>
       <div class="scene-inner cta-inner">
         <div class="text-panel reveal-text" id="textPanel5"></div>
         <div class="death-counter" id="deathCounter"></div>
+        <div class="death-note" id="deathCounterNote"></div>
         <div class="poaching-data" id="poachingData"></div>
         <div class="cta-buttons" id="ctaButtons">
           <a href="https://www.worldwildlife.org/species/jaguar" target="_blank" rel="noopener" class="btn btn-share" id="btnLearn">Learn more</a>
           <button class="btn btn-share" id="btnShare">Share</button>
           <button class="btn btn-share" id="btnRefs">References</button>
+          <button class="btn btn-share" id="btnCard">Save the card</button>
           <button class="btn btn-share btn-guardian" id="btnGuardian">Walk it again, as a guardian</button>
         </div>
       </div>
@@ -179,6 +203,8 @@
           <li class="ref-item">"Brazil: Supreme Court Ruling in Favour of Ancestral Land Rights." <em>Office of the United Nations High Commissioner for Human Rights</em>, 22 Sept. 2023, www.ohchr.org/en/press-briefing-notes/2023/09/brazil-supreme-court-ruling-favour-ancestral-land-rights. Accessed 28 May 2026.</li>
           <li class="ref-item">"Government of Brazil Advances in the Demarcation of Ten Indigenous Lands." <em>COP30 Brasil</em>, cop30.br/en/news-about-cop30/government-of-brazil-advances-in-the-demarcation-of-ten-indigenous-lands. Accessed 28 May 2026.</li>
           <li class="ref-item">"Jaguar." <em>World Wildlife Fund</em>, www.worldwildlife.org/species/jaguar/. Accessed 28 May 2026.</li>
+          <li class="ref-item">"Poaching and Illegal Trade a Growing Threat to Jaguars: CITES Study." <em>CITES</em>, 21 Dec. 2021, cites.org/eng/CITES_study_illegal_trade_poaching_jaguar_pantheraonca_2112021. Accessed 29 May 2026.</li>
+          <li class="ref-item">Tensen, Laura, et al. "The Illegal Trade in Jaguars." <em>CITES</em>, 2021, cites.org/sites/default/files/articles/CITES_Study_on_Illegal_Trade_in_Jaguars%20.pdf. Accessed 29 May 2026.</li>
           <li class="ref-item">"Poaching." <em>Rainforest Trust</em>, www.rainforesttrust.org/our-impact/our-approach/threats-to-rainforests/poaching/. Accessed 28 May 2026.</li>
         </ol>
         <button class="btn btn-share" id="btnBackFromRefs">Back</button>
@@ -220,8 +246,51 @@
       </div>
     </div>
 
+    <!-- ========== GUARDIAN: WARMTH (you watch over them) ========== -->
+    <div class="scene" id="scene-12">
+      <div class="scene-bg" id="bg12"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel12"></div>
+        <div class="prompt hidden" id="prompt12">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- ========== GUARDIAN: THE HUNTER COMES (you step in) ========== -->
+    <div class="scene" id="scene-13">
+      <div class="scene-bg" id="bg13"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel13"></div>
+        <div class="prompt hidden" id="prompt13">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- ========== GUARDIAN: THEY LIVE (resolution) ========== -->
+    <div class="scene" id="scene-14">
+      <div class="scene-bg" id="bg14"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel14"></div>
+        <div class="prompt hidden" id="prompt14">Click to continue</div>
+      </div>
+    </div>
+
     <!-- Persistent control hint shown at the bottom of every scene -->
     <div class="scene-hint" id="sceneHint"></div>
+
+    <!-- (D) Persistent every-6-seconds heartbeat counter -->
+    <div class="heartbeat" id="heartbeat" aria-hidden="true">
+      <span class="hb-dot"></span><span class="hb-num" id="hbNum">0</span>
+    </div>
+
+    <!-- (C) Pre-shot flashback overlay -->
+    <div class="flashback" id="flashback"></div>
+
+    <!-- Developer scene-jump panel (toggle with the ` key) -->
+    <div class="dev-panel" id="devPanel">
+      <div class="dev-inner">
+        <h3 class="dev-title">DEV · Jump to scene <span class="dev-hint">press ` to toggle · Esc to close</span></h3>
+        <div class="dev-list" id="devList"></div>
+      </div>
+    </div>
 
     <!-- Persistent rewind button (bottom-right) + history/log panel -->
     <button class="history-btn" id="historyBtn" aria-label="Rewind to an earlier moment">
