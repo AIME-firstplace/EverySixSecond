@@ -3,6 +3,12 @@
 > 倒序,最新在上。每次更新一条,简要。
 
 ## 2026-05-29
+- **分支多结局系统（甲·双层 + 5 结局）**:仿《饿殍》。`localStorage e6s_unlocked/e6s_endings` 记录通关与已解锁结局。第一周目「选择(7)」仍强制开枪(保留原宣言);通关「真相」后解锁,重走时(7)变 3 真选项:开枪/放下枪/悄悄退走。
+  - **开枪** → 那一枪 → 余波 →【二次分叉 forkButtons】追着皮走(→真相=结局**血价/Blood Money**) / 留下陪它们(→结局**长夜/Nightfall**,scene-23,图 longnight.png)
+  - **放下枪** → 来不及 → 美洲豹反杀:红闪+大「死」字(scene-21)+一行字 → 解锁结局**代价/Reckoning** → 【回档】回到选择前
+  - **悄悄退走** → 结局**空枪/Hollow**(scene-22):你走了,钟没停
+  - **破晓/Daybreak** = 守护者「它们活着」线代号
+  - 结局英文用专属词(Blood Money/Reckoning/Nightfall/Hollow/Daybreak),非直译。共享 `#endingActions`(解锁横幅+回档/从头再来)、`advanceText` onEnd 钩子、菜单标注「结局」、DEV_SCENES 加 21/22/23。
 - **支线②「多年以后」落地**:scene-20,接幼崽(8)后→黑屏2秒→多年后长大的 Sol 把自己的幼崽推向同一片水(轮回),林中藏着猎人剪影→黑屏2秒→回那张皮(9)。图 `sol_grown.png`(Stitch 同背景技法,背景里藏隐约持枪剪影)。结尾落在"你曾站立的地方,有什么又在注视"。复用支线①的 BRANCH 黑屏路由(BRANCH_SCENES 加 20)。
 - **支线首尾各 2 秒黑屏 + 点击响应修复**:`goTo` 黑屏改为"进/出支线两头都触发";`playLine` 打完字立刻解锁点击(不再等满 `wait`),`advanceText` 加 `playToken++` 防旧行提示闪现——全局更跟手。
 - **支线①「她也曾是幼崽」落地**:仿《饿殍》主线+支线结构。新场景 scene-15,接在温暖(1)之后→黑屏2秒→闪回(Momo 幼时偎在她母亲身边、被推向同一片水)→回主线猎人(2)。图 `momo_memory.png`(Stitch 同背景技法 IMAGE_6、记忆梦境感)。新增 `goTo` 的 `BRANCH_SCENES` 黑屏路由 + `.blackout` 遮罩、`SUBLINE1_LINES`、`enterSubline1()`、SCENE_TEXT[15]、菜单标注「支线」(sceneNames/Desc + DEV_SCENES 加 15)。待办:支线②「多年以后」(接幼崽8后→回那张皮9)、「长夜」大结局(原第一个夜晚)。

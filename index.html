@@ -98,6 +98,12 @@
           <button class="btn choice-btn" id="btnWait">Wait</button>
           <button class="btn choice-btn" id="btnShoot">Shoot</button>
         </div>
+        <!-- unlocked (replay) real choice -->
+        <div class="choice-buttons hidden" id="choiceButtons3">
+          <button class="btn choice-btn" id="btnShoot3">Shoot</button>
+          <button class="btn choice-btn" id="btnLower">Lower the gun</button>
+          <button class="btn choice-btn" id="btnSlip">Slip away</button>
+        </div>
       </div>
     </div>
 
@@ -149,6 +155,11 @@
       <div class="scene-inner">
         <div class="text-panel" id="textPanel4"></div>
         <div class="prompt hidden" id="prompt4">Click to continue</div>
+        <!-- fork B (unlocked) : follow the skin, or stay with the cubs -->
+        <div class="choice-buttons hidden" id="forkButtons">
+          <button class="btn choice-btn" id="btnFollow">Follow the skin</button>
+          <button class="btn choice-btn" id="btnStay">Stay with them</button>
+        </div>
       </div>
     </div>
 
@@ -297,6 +308,43 @@
 
     <!-- Persistent control hint shown at the bottom of every scene -->
     <div class="scene-hint" id="sceneHint"></div>
+
+    <!-- ========== SCENE 21 · 死亡结局「代价」 ========== -->
+    <div class="scene" id="scene-21">
+      <div class="scene-bg scene-bg-dark" id="bg21"></div>
+      <div class="death-flash" id="deathFlash"></div>
+      <div class="death-screen" id="deathScreen">
+        <div class="death-char" id="deathChar">死</div>
+        <div class="death-line" id="deathLine"></div>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 22 · 结局「空枪」 ========== -->
+    <div class="scene" id="scene-22">
+      <div class="scene-bg scene-bg-dark" id="bg22"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel22"></div>
+        <div class="prompt hidden" id="prompt22">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 23 · 结局「长夜」 ========== -->
+    <div class="scene" id="scene-23">
+      <div class="scene-bg" id="bg23"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel23"></div>
+        <div class="prompt hidden" id="prompt23">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- Shared ending actions (unlock banner + rewind / restart) -->
+    <div class="ending-actions" id="endingActions">
+      <div class="ending-unlock" id="endingUnlock"></div>
+      <div class="ending-btns">
+        <button class="btn ending-btn hidden" id="btnRewindChoice">Back to the choice</button>
+        <button class="btn ending-btn" id="btnRestart">From the beginning</button>
+      </div>
+    </div>
 
     <!-- Black-screen interlude overlay (main → 支线 transition) -->
     <div class="blackout" id="blackout"></div>

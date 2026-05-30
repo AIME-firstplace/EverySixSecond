@@ -18,6 +18,24 @@
   let pageOpenTime = 0;         /* set at boot — drives the "every 6s" live death counter */
   let deathTimer = null;
   let heartbeatTimer = null;    /* (D) persistent 6s tick */
+
+  /* (甲·双层) story unlock + which endings have been reached */
+  let storyUnlocked = false;
+  const unlockedEndings = new Set();
+  try {
+    storyUnlocked = localStorage.getItem('e6s_unlocked') === '1';
+    JSON.parse(localStorage.getItem('e6s_endings') || '[]').forEach((e) => unlockedEndings.add(e));
+  } catch (_) {}
+  function unlockStory() {
+    storyUnlocked = true;
+    try { localStorage.setItem('e6s_unlocked', '1'); } catch (_) {}
+  }
+  function recordEnding(key) {
+    unlockedEndings.add(key);
+    try { localStorage.setItem('e6s_endings', JSON.stringify([...unlockedEndings])); } catch (_) {}
+    unlockStory();
+  }
+  function endName(key) { return t('endName_' + key); }
   let flashbackShown = false;   /* (C) only flash once per kill scene */
   let ambientEl = null;         /* (E) rainforest ambience bed */
   let momentRAF = null;         /* (Moment) particle animation handle */
@@ -154,6 +172,24 @@
     { text: { en: 'And in the trees — where you once stood — something is watching again.', zh: '而在林子深处 —— 你曾站立的地方 —— 有什么，又在注视。' }, speed: 46, wait: 2600, big: true },
   ];
 
+  /* Ending「空枪」— you lowered the gun and walked away; the clock didn't stop. */
+  const EMPTYGUN_LINES = [
+    { text: { en: 'You lowered the rifle. You backed into the trees.', zh: '你放下了枪。你退回了林子里。' }, speed: 50, wait: 1500 },
+    { text: { en: 'She never knew you were there. You told yourself you saved her.', zh: '她始终不知道你来过。你告诉自己：你救了她。' }, speed: 48, wait: 1600 },
+    { text: { en: 'But the skin still pays — and down the river, another rifle was already raised.', zh: '可那张皮还是值钱 —— 而沿着河往下，另一支枪，早已举起。' }, speed: 48, wait: 1700 },
+    { text: { en: 'Six seconds. Then six more. The clock did not care that you walked away.', zh: '六秒。又六秒。那座钟，不在乎你转身离开。' }, speed: 48, wait: 1800 },
+    { text: { en: 'You saved this one. You did not save the rate.', zh: '你救了这一只。你没能救下那个速率。' }, speed: 46, wait: 2400, big: true },
+  ];
+
+  /* Ending「长夜」— you stayed; the orphaned cubs survive their first night. */
+  const LONGNIGHT_LINES = [
+    { text: { en: 'You stayed. You did not follow the money.', zh: '你留了下来。你没有追着钱走。' }, speed: 50, wait: 1500 },
+    { text: { en: 'But staying could not bring her back.', zh: '可是留下，也唤不回她。' }, speed: 48, wait: 1600 },
+    { text: { en: 'The cubs pressed together against the cold, and waited out the dark.', zh: '两只幼崽挤在一起取暖，熬着这片黑。' }, speed: 48, wait: 1700 },
+    { text: { en: 'One kept its eyes open until dawn.', zh: '有一只，把眼睛睁到了天亮。' }, speed: 48, wait: 1800 },
+    { text: { en: 'They survived the first night. Almost none survive the nights that follow.', zh: '它们撑过了第一夜。而之后的每一夜，几乎无人能撑过。' }, speed: 46, wait: 2600, big: true },
+  ];
+
   /* ============ I18N (EN / 中文) ============ */
   let LANG = 'en';
   try { const s = localStorage.getItem('e6s_lang'); if (s === 'en' || s === 'zh') LANG = s; } catch (_) {}
@@ -196,6 +232,23 @@
       shootBtn: 'Shoot',
       hbLabel: 'lost',
       feedHint: 'Coax him to the water — tap the river',
+      /* --- branching choices & multiple endings (甲·双层) --- */
+      replayHint: 'This time, the choice is yours.',
+      lowerBtn: 'Lower the gun',
+      slipBtn: 'Slip away',
+      followBtn: 'Follow the skin',
+      stayBtn: 'Stay with them',
+      forkPrompt: 'She is gone. What do you do now?',
+      deathChar: 'DEAD',
+      deathLine: 'You hesitated — and she was faster.',
+      unlockTpl: 'ENDING UNLOCKED · 「{name}」',
+      rewindChoiceBtn: 'Back to the choice',
+      restartBtn: 'From the beginning',
+      endName_xuejia: 'Blood Money',
+      endName_daijia: 'Reckoning',
+      endName_changye: 'Nightfall',
+      endName_kongqiang: 'Hollow',
+      endName_poxiao: 'Daybreak',
       waitLines: ['You waited.', 'But the skin still pays.', 'Your finger moved anyway.'],
       refuseLines: [
         "You lower the rifle. You don't fire.",
@@ -230,8 +283,8 @@
         16: 'Take it in  ·  click when you are ready',
       },
       hintPressEnter: 'Tap, click, or press  ENTER',
-      sceneNames: { intro: 'Introduction', 0: 'Warning', 1: 'Warmth', 15: 'She Was a Cub Too', 16: 'The Moment', 2: 'The Hunter', 7: 'The Choice', 3: 'The Shot', 4: 'Aftermath', 8: 'The Cubs', 20: 'Years Later', 9: 'The Skin', 5: 'The Truth', 6: 'Sources', 10: 'The Guardian', 12: 'Watch', 13: 'Step In', 11: 'Protect', 14: 'They Live' },
-      sceneDesc: { intro: 'Before you begin', 0: 'Content warning', 15: 'SIDE · a memory, one generation back', 20: 'SIDE · the circle closes, one generation on', 7: 'A choice that was never yours', 3: 'The hunt — you pull the trigger', 5: 'The truth & the data', 6: 'Works cited', 10: 'Walk it again, as a guardian', 11: 'You shield them' },
+      sceneNames: { intro: 'Introduction', 0: 'Warning', 1: 'Warmth', 15: 'She Was a Cub Too', 16: 'The Moment', 2: 'The Hunter', 7: 'The Choice', 3: 'The Shot', 4: 'Aftermath', 8: 'The Cubs', 20: 'Years Later', 9: 'The Skin', 5: 'The Truth', 6: 'Sources', 10: 'The Guardian', 12: 'Watch', 13: 'Step In', 11: 'Protect', 14: 'They Live', 21: 'Reckoning', 22: 'Hollow', 23: 'Nightfall' },
+      sceneDesc: { intro: 'Before you begin', 0: 'Content warning', 15: 'SIDE · a memory, one generation back', 20: 'SIDE · the circle closes, one generation on', 7: 'A choice that was never yours', 3: 'The hunt — you pull the trigger', 5: 'The truth & the data', 6: 'Works cited', 10: 'Walk it again, as a guardian', 11: 'You shield them', 21: 'ENDING · you hesitated', 22: 'ENDING · you walked away', 23: 'ENDING · the first night' },
       reveal: {
         l1: 'Momo is not real.',
         l2: 'But every 6 seconds, a real one dies.',
@@ -297,6 +350,23 @@
       shootBtn: '开枪',
       hbLabel: '已逝去',
       feedHint: '哄他到水边 —— 轻触河面',
+      /* --- 分支选择 & 多结局 (甲·双层) --- */
+      replayHint: '这一次，选择是你的。',
+      lowerBtn: '放下枪',
+      slipBtn: '悄悄退走',
+      followBtn: '追着皮走',
+      stayBtn: '留下陪它们',
+      forkPrompt: '她不在了。现在，你怎么做？',
+      deathChar: '死',
+      deathLine: '你迟疑了 —— 而她，比你快。',
+      unlockTpl: '解锁结局 ·「{name}」',
+      rewindChoiceBtn: '回到那个选择',
+      restartBtn: '从头再来',
+      endName_xuejia: '血价',
+      endName_daijia: '代价',
+      endName_changye: '长夜',
+      endName_kongqiang: '空枪',
+      endName_poxiao: '破晓',
       waitLines: ['你等了。', '但皮还是值钱。', '你的手指还是动了。'],
       refuseLines: [
         '你放下了枪。你没有开火。',
@@ -331,8 +401,8 @@
         16: '好好看看它  ·  准备好了再点',
       },
       hintPressEnter: '点击任意处，或按  ENTER',
-      sceneNames: { intro: '序', 0: '警告', 1: '温暖', 15: '她也曾是幼崽', 16: '凝住的一刻', 2: '猎人', 7: '选择', 3: '那一枪', 4: '余波', 8: '幼崽', 20: '多年以后', 9: '那张皮', 5: '真相', 6: '来源', 10: '守护者', 12: '守望', 13: '挺身', 11: '守护', 14: '它们活着' },
-      sceneDesc: { intro: '开始之前', 0: '内容警告', 15: '支线 · 一段回忆，往上一代', 20: '支线 · 一个圈合上了，往下一代', 7: '一个从来不属于你的选择', 3: '狩猎 —— 你扣下扳机', 5: '真相与数据', 6: '参考文献', 10: '以守护者身份，重走一遍', 11: '你护住它们' },
+      sceneNames: { intro: '序', 0: '警告', 1: '温暖', 15: '她也曾是幼崽', 16: '凝住的一刻', 2: '猎人', 7: '选择', 3: '那一枪', 4: '余波', 8: '幼崽', 20: '多年以后', 9: '那张皮', 5: '真相', 6: '来源', 10: '守护者', 12: '守望', 13: '挺身', 11: '守护', 14: '它们活着', 21: '代价', 22: '空枪', 23: '长夜' },
+      sceneDesc: { intro: '开始之前', 0: '内容警告', 15: '支线 · 一段回忆，往上一代', 20: '支线 · 一个圈合上了，往下一代', 7: '一个从来不属于你的选择', 3: '狩猎 —— 你扣下扳机', 5: '真相与数据', 6: '参考文献', 10: '以守护者身份，重走一遍', 11: '你护住它们', 21: '结局 · 你迟疑了', 22: '结局 · 你转身离开', 23: '结局 · 第一个夜晚' },
       reveal: {
         l1: '莫莫并不存在。',
         l2: '但每过 6 秒，就有一个真实的生命死去。',
@@ -457,6 +527,8 @@
     if (textCtx.onAdvance) textCtx.onAdvance(lineIdx);
     if (lineIdx < textCtx.lines.length) {
       playLine(textCtx.panel, textCtx.prompt, textCtx.lines[lineIdx]);
+    } else if (textCtx.onEnd) {
+      textCtx.onEnd();
     } else {
       goTo(textCtx.nextScene);
     }
@@ -590,6 +662,9 @@
       case 1: enterWarm();       break;
       case 15: enterSubline1();  break;
       case 20: enterSubline2();  break;
+      case 21: enterDeath();     break;
+      case 22: enterEmptyGun();  break;
+      case 23: enterLongNight(); break;
       case 16: enterMoment();    break;
       case 2: enterHunter();     break;
       case 7: enterChoice();     break;
@@ -1198,11 +1273,14 @@
     const bg = $('#bg4');
     bg.style.filter = 'brightness(0.75) saturate(0.7)';
 
+    const fb = $('#forkButtons'); if (fb) { fb.classList.add('hidden'); fb.style.opacity = '0'; }
     textCtx = {
       lines: AFTERMATH_LINES,
       panel: '#textPanel4',
       prompt: '#prompt4',
       nextScene: 8,
+      /* (甲·双层) on the unlocked replay, the aftermath forks: follow the skin, or stay */
+      onEnd: storyUnlocked ? showForkB : null,
       onAdvance: function (idx) {
         /* progressive darkening — art is already night-toned, so stay gentle */
         const t = idx / AFTERMATH_LINES.length;
@@ -1334,6 +1412,7 @@
   }
   function enterGuardEnd() {
     lineIdx = 0;
+    recordEnding('poxiao');   /* reaching the guardian ending unlocks 破晓 + the replay choices */
     textCtx = { lines: GUARD_END_LINES, panel: '#textPanel14', prompt: '#prompt14', nextScene: 5, onAdvance: null };
     playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
   }
@@ -1596,16 +1675,117 @@
 
   /* ============ SCENE 7: THE CHOICE (illusory) ============ */
   function enterChoice() {
-    startAmbient();   /* (E) forest still alive during the false choice */
+    startAmbient();   /* (E) forest still alive during the choice */
     const sc = $('#scene-7');
     if (sc) sc.classList.remove('committed');
-    const buttons = $('#choiceButtons');
     const text = $('#choiceText');
-    text.textContent = t('choicePrompt');
     text.classList.remove('typewriter-cursor', 'narration', 'text-big');
-    buttons.style.opacity = '1';
-    buttons.style.pointerEvents = '';
+    const forced = $('#choiceButtons');
+    const real = $('#choiceButtons3');
+    if (storyUnlocked) {
+      /* (甲·双层) replay — the choice is finally real */
+      text.textContent = t('replayHint');
+      forced.classList.add('hidden');
+      real.classList.remove('hidden');
+      real.style.opacity = '1'; real.style.pointerEvents = '';
+    } else {
+      /* first time — the choice was never yours */
+      text.textContent = t('choicePrompt');
+      real.classList.add('hidden');
+      forced.classList.remove('hidden');
+      forced.style.opacity = '1'; forced.style.pointerEvents = '';
+    }
     canInteract = true;
+  }
+
+  function hideChoiceButtons() {
+    ['#choiceButtons', '#choiceButtons3'].forEach((s) => {
+      const e = $(s); if (e) { e.style.opacity = '0'; e.style.pointerEvents = 'none'; }
+    });
+  }
+  /* real choice · SHOOT — leads into the main line (→ aftermath → fork B) */
+  function chooseShootReal() {
+    if (!canInteract) return; canInteract = false;
+    hideChoiceButtons();
+    $('#scene-7').classList.add('committed');
+    goTo(3);
+  }
+  /* real choice · LOWER THE GUN — you hesitate, the jaguar is faster → death「代价」*/
+  function chooseLower() {
+    if (!canInteract) return; canInteract = false;
+    hideChoiceButtons();
+    goTo(21);
+  }
+  /* real choice · SLIP AWAY — Empty Gun「空枪」*/
+  function chooseSlip() {
+    if (!canInteract) return; canInteract = false;
+    hideChoiceButtons();
+    goTo(22);
+  }
+
+  /* ============ FORK B (after the aftermath, unlocked replay) ============ */
+  function showForkB() {
+    canInteract = false;
+    const p = $('#prompt4'); if (p) p.classList.add('hidden');
+    const fb = $('#forkButtons');
+    if (fb) { fb.classList.remove('hidden'); fb.style.opacity = '1'; fb.style.pointerEvents = ''; }
+  }
+  function hideForkB() {
+    const fb = $('#forkButtons'); if (fb) { fb.style.opacity = '0'; fb.style.pointerEvents = 'none'; fb.classList.add('hidden'); }
+  }
+  function chooseFollow() { hideForkB(); goTo(8); }   /* follow the skin → 真相 = 血价 */
+  function chooseStay() { hideForkB(); goTo(23); }    /* stay with the cubs → 长夜 */
+
+  /* ============ SCENE 21 · DEATH ENDING 「代价」 ============ */
+  async function enterDeath() {
+    const myToken = playToken;
+    canInteract = false;
+    hideEndingActions();
+    const ds = $('#deathScreen'); if (ds) ds.classList.remove('show');
+    const dc = $('#deathChar'); if (dc) dc.textContent = t('deathChar');
+    const dl = $('#deathLine'); if (dl) dl.textContent = '';
+    const flash = $('#deathFlash');
+    try { initAudio(); playCry(); } catch (_) {}
+    if (flash) { flash.classList.remove('flash'); void flash.offsetWidth; flash.classList.add('flash'); }
+    await delay(560);
+    if (myToken !== playToken) return;
+    if (ds) ds.classList.add('show');            /* the 死 character lands */
+    await delay(1500);
+    if (myToken !== playToken) return;
+    if (dl) dl.textContent = t('deathLine');
+    await delay(1700);
+    if (myToken !== playToken) return;
+    recordEnding('daijia');
+    showEndingActions('daijia', true);           /* offer 回档 back to the choice */
+  }
+
+  /* ============ SCENE 22 · ENDING 「空枪」 ============ */
+  function enterEmptyGun() {
+    lineIdx = 0;
+    const bg = $('#bg22'); if (bg) bg.style.backgroundImage = "url('images/backgrounds/forest_main.png')";
+    textCtx = { lines: EMPTYGUN_LINES, panel: '#textPanel22', prompt: '#prompt22', nextScene: 0,
+      onEnd: function () { recordEnding('kongqiang'); showEndingActions('kongqiang', false); } };
+    playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
+  }
+
+  /* ============ SCENE 23 · ENDING 「长夜」 ============ */
+  function enterLongNight() {
+    lineIdx = 0;
+    const bg = $('#bg23'); if (bg) bg.style.backgroundImage = "url('images/backgrounds/longnight.png')";
+    textCtx = { lines: LONGNIGHT_LINES, panel: '#textPanel23', prompt: '#prompt23', nextScene: 0,
+      onEnd: function () { recordEnding('changye'); showEndingActions('changye', false); } };
+    playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
+  }
+
+  /* ============ SHARED ENDING ACTIONS (unlock banner + rewind / restart) ============ */
+  function showEndingActions(key, allowRewind) {
+    canInteract = false;
+    const u = $('#endingUnlock'); if (u) u.textContent = t('unlockTpl').replace('{name}', endName(key));
+    const rw = $('#btnRewindChoice'); if (rw) rw.classList.toggle('hidden', !allowRewind);
+    const wrap = $('#endingActions'); if (wrap) wrap.classList.add('show');
+  }
+  function hideEndingActions() {
+    const wrap = $('#endingActions'); if (wrap) wrap.classList.remove('show');
   }
 
   /* "Wait" still ends in the shot — the choice was never real. */
@@ -1639,6 +1819,7 @@
 
   /* ============ SCENE 5: REVEAL + DATA + CTA ============ */
   async function enterReveal() {
+    recordEnding('xuejia');   /* reaching the truth/data is the 血价 ending — also unlocks the replay choices */
     const panel = $('#textPanel5');
     const dataBox = $('#poachingData');
     const ctaButtons = $('#ctaButtons');
@@ -1871,7 +2052,7 @@
   }
 
   /* ============ DEVELOPER SCENE-JUMP ============ */
-  const DEV_SCENES = ['intro', 0, 1, 15, 2, 7, 3, 4, 8, 20, 9, 5, 6, 10, 12, 13, 11, 14];
+  const DEV_SCENES = ['intro', 0, 1, 15, 2, 7, 3, 4, 8, 20, 9, 5, 6, 10, 12, 13, 11, 14, 21, 22, 23];
   function buildDevList() {
     const list = $('#devList');
     if (!list) return;
@@ -1929,6 +2110,15 @@
     setTxt('#btnRefs', t('references'));
     setTxt('#btnWait', t('waitBtn'));
     setTxt('#btnShoot', t('shootBtn'));
+    setTxt('#btnShoot3', t('shootBtn'));
+    setTxt('#btnLower', t('lowerBtn'));
+    setTxt('#btnSlip', t('slipBtn'));
+    setTxt('#btnFollow', t('followBtn'));
+    setTxt('#btnStay', t('stayBtn'));
+    setTxt('#btnRewindChoice', t('rewindChoiceBtn'));
+    setTxt('#btnRestart', t('restartBtn'));
+    setTxt('#prompt22', t('clickContinue'));
+    setTxt('#prompt23', t('clickContinue'));
     setTxt('#hbLabel', t('hbLabel'));
     setTxt('#btnGuardian', t('guardianBtn'));
     setTxt('#btnGuardReturn', t('returnBtn'));
@@ -2110,6 +2300,39 @@
     const btnShoot = $('#btnShoot');
     if (btnShoot) btnShoot.addEventListener('click', (e) => { e.stopPropagation(); if (canInteract) { canInteract = false; goTo(3); } });
 
+    /* (甲·双层) unlocked real choices + fork B + ending actions */
+    const btnShoot3 = $('#btnShoot3');
+    if (btnShoot3) btnShoot3.addEventListener('click', (e) => { e.stopPropagation(); chooseShootReal(); });
+    const btnLower = $('#btnLower');
+    if (btnLower) btnLower.addEventListener('click', (e) => { e.stopPropagation(); chooseLower(); });
+    const btnSlip = $('#btnSlip');
+    if (btnSlip) btnSlip.addEventListener('click', (e) => { e.stopPropagation(); chooseSlip(); });
+    const btnFollow = $('#btnFollow');
+    if (btnFollow) btnFollow.addEventListener('click', (e) => { e.stopPropagation(); chooseFollow(); });
+    const btnStay = $('#btnStay');
+    if (btnStay) btnStay.addEventListener('click', (e) => { e.stopPropagation(); chooseStay(); });
+    const btnRewindChoice = $('#btnRewindChoice');
+    if (btnRewindChoice) btnRewindChoice.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hideEndingActions();
+      const ds = $('#deathScreen'); if (ds) ds.classList.remove('show');
+      goTo(7);
+    });
+    const btnRestart = $('#btnRestart');
+    if (btnRestart) btnRestart.addEventListener('click', (e) => { e.stopPropagation(); location.reload(); });
+
+    /* Scene 22 / 23 endings — click to advance narration */
+    $('#scene-22').addEventListener('click', (e) => {
+      if (currentScene !== 22) return;
+      if (e.target.closest('.btn')) return;
+      advanceText();
+    });
+    $('#scene-23').addEventListener('click', (e) => {
+      if (currentScene !== 23) return;
+      if (e.target.closest('.btn')) return;
+      advanceText();
+    });
+
     /* Scene 3: kill shots */
     $('#scene-3').addEventListener('click', (e) => {
       if (currentScene !== 3) return;
@@ -2123,8 +2346,9 @@
     $('#scene-3').addEventListener('touchmove', (e) => { if (e.touches[0]) handleMouseMove(e.touches[0]); }, { passive: true });
 
     /* Scene 4: aftermath text — click to advance lines */
-    $('#scene-4').addEventListener('click', () => {
+    $('#scene-4').addEventListener('click', (e) => {
       if (currentScene !== 4) return;
+      if (e.target.closest('.btn')) return;
       advanceText();
     });
 
