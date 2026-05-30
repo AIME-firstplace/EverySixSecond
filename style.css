@@ -1275,6 +1275,132 @@ html, body {
 /* once a choice is made there is no escaping the shot */
 #scene-7.committed { cursor: crosshair; }
 
+/* (D) after the choice, the narration matches the standard bottom-letterbox
+   ADV format used by scenes 1/2/4/8/9 — left-aligned, gold rule, no italics */
+#scene-7 .choice-text.narration {
+  position: absolute;
+  left: 50%;
+  bottom: 13%;
+  transform: translateX(-50%);
+  width: min(880px, 86vw);
+  max-width: none;
+  min-height: 0;
+  text-align: left;
+  font-style: normal;
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1.15rem, 2.15vw, 1.62rem);
+  line-height: 1.95;
+  letter-spacing: 0.015em;
+  color: #ede6da;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  z-index: 20;
+}
+#scene-7 .choice-text.narration::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -1.1rem;
+  width: 46px;
+  height: 1px;
+  background: linear-gradient(to right, rgba(229,194,130,0.7), transparent);
+}
+@media (max-width: 600px) {
+  #scene-7 .choice-text.narration { width: 88vw; bottom: 15%; font-size: 1.08rem; line-height: 1.8; }
+}
+
+/* (④) Feeding interaction — a soft beacon over the water inviting a tap */
+.warm-touch {
+  position: absolute;
+  left: 50%;
+  bottom: 26%;
+  transform: translateX(-50%);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid rgba(229, 211, 168, 0.85);
+  background: radial-gradient(circle, rgba(229, 211, 168, 0.28), rgba(229, 211, 168, 0.05) 60%, transparent 70%);
+  cursor: pointer;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  box-shadow: 0 0 24px rgba(229, 211, 168, 0.35);
+}
+.warm-touch.show {
+  opacity: 1;
+  pointer-events: auto;
+  animation: warmPulse 1.8s ease-in-out infinite;
+}
+.warm-touch:hover { border-color: rgba(245, 230, 195, 1); }
+@keyframes warmPulse {
+  0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 18px rgba(229, 211, 168, 0.3); }
+  50% { transform: translateX(-50%) scale(1.16); box-shadow: 0 0 32px rgba(229, 211, 168, 0.55); }
+}
+@media (max-width: 600px) {
+  .warm-touch { width: 88px; height: 88px; bottom: 24%; }
+}
+/* (④) expanding water rings when Sol drinks */
+.ripple {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 2px solid rgba(196, 220, 232, 0.7);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 29;
+  opacity: 0;
+  animation: rippleOut 1.4s ease-out forwards;
+}
+@keyframes rippleOut {
+  0% { transform: scale(0.4); opacity: 0.75; }
+  100% { transform: scale(11); opacity: 0; }
+}
+
+/* 支线①/② — same bottom-letterbox ADV format as scene 8 */
+#scene-15 .text-panel,
+#scene-20 .text-panel {
+  position: absolute;
+  left: 50%;
+  bottom: 13%;
+  transform: translateX(-50%);
+  width: min(880px, 86vw);
+  max-width: none;
+  min-height: 0;
+  text-align: left;
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1.15rem, 2.15vw, 1.62rem);
+  line-height: 1.95;
+  letter-spacing: 0.015em;
+  color: #ede6da;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  z-index: 20;
+}
+#scene-15 .text-panel::before,
+#scene-20 .text-panel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -1.1rem;
+  width: 46px;
+  height: 1px;
+  background: linear-gradient(to right, rgba(229,194,130,0.7), transparent);
+}
+/* a faint memory haze over the whole flashback */
+#scene-15 .scene-bg { filter: saturate(0.82) brightness(0.96); }
+
+/* Black-screen interlude (main → 支线 handoff) */
+.blackout {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9000;
+  transition: opacity 0.7s ease;
+}
+.blackout.show { opacity: 1; pointer-events: auto; }
+
 @media (max-width: 600px) {
   .choice-buttons { flex-direction: column; align-items: center; gap: 1rem; }
 }
@@ -1704,22 +1830,28 @@ html, body {
   align-items: center;
   gap: 0.45rem;
   font-family: 'Courier New', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  color: #6e6258;
+  font-size: 1.02rem;
+  letter-spacing: 0.1em;
+  color: #c4b6a2;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.8s ease;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+  text-shadow: 0 1px 8px rgba(0,0,0,0.95);
 }
-.heartbeat.show { opacity: 0.55; }
+.heartbeat.show { opacity: 0.9; }
 .hb-dot {
-  width: 7px; height: 7px;
+  width: 10px; height: 10px;
   border-radius: 50%;
   background: #c0392b;
-  opacity: 0.45;
+  opacity: 0.8;
 }
-.hb-num { min-width: 2ch; text-align: right; }
+.hb-label { font-size: 0.82em; letter-spacing: 0.16em; opacity: 0.85; }
+.hb-num {
+  min-width: 2ch;
+  text-align: right;
+  font-weight: 700;
+  color: #e07a68;
+}
 .heartbeat.tick .hb-dot { animation: hbPulse 0.6s ease-out; }
 .heartbeat.tick .hb-num { animation: hbBump 0.6s ease-out; }
 @keyframes hbPulse {

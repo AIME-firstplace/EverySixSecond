@@ -69,6 +69,8 @@
         <div class="text-panel warm-text" id="textPanel1"></div>
         <div class="prompt hidden" id="prompt1">Click to continue</div>
       </div>
+      <!-- (④) gentle feeding interaction — tap the water to coax Sol to drink -->
+      <button class="warm-touch" id="warmTouch" aria-label="water"></button>
     </div>
 
     <!-- ========== SCENE 16: THE MOMENT (cinematic living tableau) ========== -->
@@ -157,6 +159,26 @@
       <div class="scene-inner">
         <div class="text-panel" id="textPanel8"></div>
         <div class="prompt hidden" id="prompt8">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 15 · 支线① : SHE WAS ONCE A CUB TOO (flashback) ========== -->
+    <div class="scene" id="scene-15">
+      <div class="scene-bg scene-bg-warm" id="bg15"></div>
+      <div class="scene-bg scene-bg-warm" id="bg15b"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel15"></div>
+        <div class="prompt hidden" id="prompt15">Click to continue</div>
+      </div>
+    </div>
+
+    <!-- ========== SCENE 20 · 支线② : YEARS LATER (Sol grown) ========== -->
+    <div class="scene" id="scene-20">
+      <div class="scene-bg scene-bg-warm" id="bg20"></div>
+      <div class="scene-bg scene-bg-warm" id="bg20b"></div>
+      <div class="scene-inner">
+        <div class="text-panel" id="textPanel20"></div>
+        <div class="prompt hidden" id="prompt20">Click to continue</div>
       </div>
     </div>
 
@@ -276,9 +298,12 @@
     <!-- Persistent control hint shown at the bottom of every scene -->
     <div class="scene-hint" id="sceneHint"></div>
 
+    <!-- Black-screen interlude overlay (main → 支线 transition) -->
+    <div class="blackout" id="blackout"></div>
+
     <!-- (D) Persistent every-6-seconds heartbeat counter -->
     <div class="heartbeat" id="heartbeat" aria-hidden="true">
-      <span class="hb-dot"></span><span class="hb-num" id="hbNum">0</span>
+      <span class="hb-dot"></span><span class="hb-label" id="hbLabel">lost</span><span class="hb-num" id="hbNum">0</span>
     </div>
 
     <!-- (C) Pre-shot flashback overlay -->

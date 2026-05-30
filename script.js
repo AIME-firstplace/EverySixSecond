@@ -30,8 +30,9 @@
     { text: { en: 'She has two cubs.', zh: '她有两只幼崽。' }, speed: 50, wait: 700 },
     { text: { en: 'Mira, the older one. She loves to climb.', zh: '米拉，姐姐。她爱攀爬。' }, speed: 45, wait: 800 },
     { text: { en: "{cub}, the younger. He's afraid of the river.", zh: '{cub}，弟弟。他怕河水。' }, speed: 45, wait: 800 },
-    { text: { en: 'She nudges him to the water’s edge.', zh: '她把他轻轻推到水边。' }, speed: 50, wait: 700 },
-    { text: { en: 'He drinks at last — learning the river will not take him.', zh: '他终于喝上了水 —— 学着相信，河水不会带走他。' }, speed: 46, wait: 900 },
+    { text: { en: 'She nudges him to the water’s edge. He freezes, afraid.', zh: '她把他轻轻推到水边。他僵住了，害怕。' }, speed: 50, wait: 700, gate: 'feed' },
+    { text: { en: 'He drinks at last. The river does not take him.', zh: '他终于喝上了水。河水没有带走他。' }, speed: 46, wait: 900 },
+    { text: { en: 'For the first time, he trusted the water — because you stayed.', zh: '他第一次，信任了这条河 —— 因为你陪着他。' }, speed: 46, wait: 1100 },
     { text: { en: 'Momo teaches them how to listen.', zh: '莫莫教它们如何倾听。' }, speed: 50, wait: 700 },
     { text: { en: 'How to wait. How to stay.', zh: '如何等待。如何留守。' }, speed: 55, wait: 1200 },
     { text: { en: "She doesn't know you're watching.", zh: '她不知道你正在窥视。' }, speed: 50, wait: 500 },
@@ -40,28 +41,33 @@
   /* Per-line "beat" image for scene 1. Same rainforest background in every
      frame — only the jaguar subjects change. Adjacent lines reuse a beat. */
   const WARM_BEATS = [
-    'harlow.png',   /* Her name is Momo.                         */
-    'harlow.png',   /* They live deep in the Amazon.              */
-    'harlow.png',   /* The water is still.                        */
-    'family.png',   /* She has two cubs.                          */
-    'mira.png',     /* Mira, the older one. She loves to climb.   */
-    'sol.png',      /* Sol, the younger. He's afraid of the river.*/
-    'sol.png',      /* She nudges him to the water's edge.        */
-    'sol.png',      /* He drinks at last.                         */
-    'listen.png',   /* Momo teaches them how to listen.         */
-    'listen.png',   /* How to wait. How to stay.                  */
-    'watched.png',  /* She doesn't know you're watching.          */
+    'harlow.png',     /* Her name is Momo.                         */
+    'harlow.png',     /* They live deep in the Amazon.              */
+    'harlow.png',     /* The water is still.                        */
+    'family.png',     /* She has two cubs.                          */
+    'mira.png',       /* Mira, the older one. She loves to climb.   */
+    'sol.png',        /* Sol, the younger. He's afraid of the river.*/
+    'sol.png',        /* She nudges him to the water's edge (afraid)*/
+    'sol_drink.png',  /* He drinks at last. (④ new art — animates)  */
+    'sol_drink.png',  /* For the first time, he trusted the water.  */
+    'listen.png',     /* Momo teaches them how to listen.           */
+    'listen.png',     /* How to wait. How to stay.                  */
+    'watched.png',    /* She doesn't know you're watching.          */
   ];
 
   const HUNTER_LINES = [
+    { text: { en: 'You watched them for a long time, through the leaves.', zh: '你透过枝叶，看了它们很久。' }, speed: 52, wait: 1300 },
+    { text: { en: 'The hands holding the branches apart are holding a rifle.', zh: '那双拨开枝叶的手，也握着一支枪。' }, speed: 48, wait: 1600 },
     { text: { en: 'You are a hunter.', zh: '你是个猎人。' }, speed: 60, wait: 1200 },
     { text: { en: 'You came for the skin.', zh: '你为皮毛而来。' }, speed: 55, wait: 1000 },
     { text: { en: 'It pays well.', zh: '它能卖个好价钱。' }, speed: 70, wait: 1500 },
   ];
 
   /* Per-line beat image for scene 2 (same dark forest + rifle, only the
-     jaguar changes): unaware -> pelt in the light -> alarmed/looking back. */
+     jaguar changes): watching -> the rifle -> unaware -> pelt -> alarmed. */
   const HUNTER_BEATS = [
+    'hidden.png',  /* You watched them...    */
+    'hidden.png',  /* ...holding a rifle.    */
     'hidden.png',  /* You are a hunter.      */
     'pelt.png',    /* You came for the skin. */
     'alarm.png',   /* It pays well.          */
@@ -82,8 +88,13 @@
     { text: { en: 'No one was left to carry him across.', zh: '再没有谁能驮他过去了。' }, speed: 55, wait: 1800 },
     { text: { en: 'Mira climbed to the highest branch — the way her mother taught her.', zh: '米拉爬上了最高的枝头 —— 像母亲教过她的那样。' }, speed: 48, wait: 1500 },
     { text: { en: 'She watched the trees until dark. No one came.', zh: '她望着林子，直到天黑。没有人来。' }, speed: 52, wait: 2400, big: true },
+    { text: { en: 'Mira waited three more nights. Then the branch was empty.', zh: '米拉又守了三个夜晚。然后，那根枝头空了。' }, speed: 50, wait: 2000 },
+    { text: { en: 'A cub alone rarely lasts a single season.', zh: '一只落单的幼崽，很少能熬过一整个旱季。' }, speed: 52, wait: 1900 },
+    { text: { en: '{cub} stayed by the river — the water she once nudged him toward.', zh: '{cub}留在了河边 —— 那片她曾一点点把他推向的水。' }, speed: 48, wait: 1700 },
+    { text: { en: 'Thin, and alone. But still here.', zh: '瘦弱，孤单。但还活着。' }, speed: 50, wait: 1800 },
+    { text: { en: 'A cub almost never makes it without a mother. {cub} is the almost — still carrying the name you gave him.', zh: '没有母亲的幼崽，几乎无一幸免。{cub}就是那个「几乎」—— 仍带着你给他的名字。' }, speed: 48, wait: 2600, big: true },
   ];
-  const CUB_BEATS = ['sol_river.png', 'sol_river.png', 'mira_tree.png', 'mira_tree.png'];
+  const CUB_BEATS = ['sol_river.png', 'sol_river.png', 'mira_tree.png', 'mira_tree.png', 'mira_tree.png', 'mira_tree.png', 'sol_river.png', 'sol_river.png', 'sol_river.png'];
 
   /* Scene 9 — where the skin goes (forest → market → wall). Echoes "it pays well". */
   const PELT_LINES = [
@@ -91,8 +102,12 @@
     { text: { en: 'It was sold at a stall — beside the ivory, the cages.', zh: '它被卖到一个摊位 —— 挨着象牙，挨着鸟笼。' }, speed: 48, wait: 1600 },
     { text: { en: 'Now it hangs on a wall, in a house she will never see.', zh: '如今它挂在一面墙上，在一座她永远见不到的房子里。' }, speed: 48, wait: 1800 },
     { text: { en: 'It paid well.', zh: '它，确实卖了个好价钱。' }, speed: 70, wait: 2400, big: true },
+    { text: { en: "'It's beautiful,' a guest says. 'Is it real?'", zh: '「真漂亮，」一位客人说。「是真的吗？」' }, speed: 50, wait: 1700 },
+    { text: { en: "'Of course it is,' the owner smiles.", zh: '「当然是真的，」主人微笑着。' }, speed: 50, wait: 1800 },
+    { text: { en: 'No one in this bright room knows she ever had a name.', zh: '这间明亮的屋子里，没有人知道她曾有过一个名字。' }, speed: 48, wait: 1900 },
+    { text: { en: 'The hunter pulled the trigger. But the wall is the reason.', zh: '猎人扣下了扳机。但那面墙，才是原因。' }, speed: 48, wait: 2600, big: true },
   ];
-  const PELT_BEATS = ['pelt_forest.png', 'pelt_market.png', 'pelt_wall.png', 'pelt_wall.png'];
+  const PELT_BEATS = ['pelt_forest.png', 'pelt_market.png', 'pelt_wall.png', 'pelt_wall.png', 'pelt_wall.png', 'pelt_wall.png', 'pelt_wall.png', 'pelt_wall.png'];
 
   /* Scene 10 — guardian reframe (the replay's new identity) */
   const GUARD_LINES = [
@@ -117,6 +132,26 @@
     { text: { en: 'The cubs grow. Sol learns the river; Mira learns the canopy.', zh: '幼崽长大了。索尔学会了河，米拉学会了树冠。' }, speed: 48, wait: 1600 },
     { text: { en: 'Because someone stayed between them and the gun.', zh: '因为有人，一直挡在它们和枪口之间。' }, speed: 50, wait: 1800 },
     { text: { en: 'Every six seconds, one is lost. But not this one. Not today.', zh: '每六秒，就有一个消逝。但不是这一只。不是今天。' }, speed: 52, wait: 2600, big: true },
+  ];
+
+  /* Scene 15 · 支线① — She was once a cub too (Momo's own flashback). */
+  const SUBLINE1_LINES = [
+    { text: { en: 'Long before Sol. Long before Mira.', zh: '在索尔出生之前。在米拉出生之前。' }, speed: 50, wait: 1400 },
+    { text: { en: 'Momo was small once, too.', zh: '莫莫，也曾经那么小。' }, speed: 52, wait: 1500 },
+    { text: { en: 'Her own mother led her to this same water.', zh: '她自己的母亲，曾把她领到这同一片水边。' }, speed: 48, wait: 1500 },
+    { text: { en: 'Nudged her in, the day she was afraid of it.', zh: '在她怕水的那天，把她一点点推进水里。' }, speed: 48, wait: 1600 },
+    { text: { en: 'The forest raised her, the way it raises them all.', zh: '这片森林养大了她 —— 像它养大每一个孩子。' }, speed: 48, wait: 1700 },
+    { text: { en: 'One generation, then the next. The same green, the same water — and the same crosshair, waiting in the leaves.', zh: '一代，又一代。同一片绿，同一片水 —— 还有枝叶里，同一个等待着的准星。' }, speed: 46, wait: 2600, big: true },
+  ];
+
+  /* Scene 20 · 支线② — Years later: Sol grown, the circle closes. */
+  const SUBLINE2_LINES = [
+    { text: { en: 'Years pass. The water is still here.', zh: '很多年过去了。这片水，还在。' }, speed: 50, wait: 1300 },
+    { text: { en: '{cub} grew up. He never left this place.', zh: '{cub}长大了。他再没离开过这里。' }, speed: 48, wait: 1500 },
+    { text: { en: 'Now there is a smaller one at his side — his own.', zh: '如今他身边，也有了一只更小的 —— 他自己的孩子。' }, speed: 48, wait: 1500 },
+    { text: { en: 'Afraid of the water — just as he once was.', zh: '怕水 —— 就像当年的他。' }, speed: 48, wait: 1500 },
+    { text: { en: 'He nudges the little one toward the edge. The circle closes.', zh: '他把那小家伙，一点点推向水边。一个圈，就此合上。' }, speed: 48, wait: 1700 },
+    { text: { en: 'And in the trees — where you once stood — something is watching again.', zh: '而在林子深处 —— 你曾站立的地方 —— 有什么，又在注视。' }, speed: 46, wait: 2600, big: true },
   ];
 
   /* ============ I18N (EN / 中文) ============ */
@@ -159,7 +194,17 @@
       choicePrompt: 'She still hasn\'t seen you.',
       waitBtn: 'Wait',
       shootBtn: 'Shoot',
+      hbLabel: 'lost',
+      feedHint: 'Coax him to the water — tap the river',
       waitLines: ['You waited.', 'But the skin still pays.', 'Your finger moved anyway.'],
+      refuseLines: [
+        "You lower the rifle. You don't fire.",
+        'Momo lifts her head. The cubs slip into the green. For one breath — they are gone.',
+        'You let this family live.',
+        'But the clock did not wait with you.',
+        'Six seconds — somewhere you will never see, another one fell.',
+        'The rifle is still in your hands. There is always another season. Another hunter.',
+      ],
       guardianBtn: 'Walk it again, as a guardian',
       guardHint: 'Aim  ·  tap each one to keep it safe',
       guardResolve: 'They live. This time, they live.',
@@ -185,8 +230,8 @@
         16: 'Take it in  ·  click when you are ready',
       },
       hintPressEnter: 'Tap, click, or press  ENTER',
-      sceneNames: { intro: 'Introduction', 0: 'Warning', 1: 'Warmth', 16: 'The Moment', 2: 'The Hunter', 7: 'The Choice', 3: 'The Shot', 4: 'Aftermath', 8: 'The Cubs', 9: 'The Skin', 5: 'The Truth', 6: 'Sources', 10: 'The Guardian', 12: 'Watch', 13: 'Step In', 11: 'Protect', 14: 'They Live' },
-      sceneDesc: { intro: 'Before you begin', 0: 'Content warning', 7: 'A choice that was never yours', 3: 'The hunt — you pull the trigger', 5: 'The truth & the data', 6: 'Works cited', 10: 'Walk it again, as a guardian', 11: 'You shield them' },
+      sceneNames: { intro: 'Introduction', 0: 'Warning', 1: 'Warmth', 15: 'She Was a Cub Too', 16: 'The Moment', 2: 'The Hunter', 7: 'The Choice', 3: 'The Shot', 4: 'Aftermath', 8: 'The Cubs', 20: 'Years Later', 9: 'The Skin', 5: 'The Truth', 6: 'Sources', 10: 'The Guardian', 12: 'Watch', 13: 'Step In', 11: 'Protect', 14: 'They Live' },
+      sceneDesc: { intro: 'Before you begin', 0: 'Content warning', 15: 'SIDE · a memory, one generation back', 20: 'SIDE · the circle closes, one generation on', 7: 'A choice that was never yours', 3: 'The hunt — you pull the trigger', 5: 'The truth & the data', 6: 'Works cited', 10: 'Walk it again, as a guardian', 11: 'You shield them' },
       reveal: {
         l1: 'Momo is not real.',
         l2: 'But every 6 seconds, a real one dies.',
@@ -208,6 +253,7 @@
       },
       intro: {
         data: [
+          'Read this slowly. In the six seconds it takes, somewhere, one wild life is already gone.',
           'Up to <em class="fig">2.7 million pangolins</em> are poached each year. Around <em class="fig">20,000 elephants</em>, for their ivory. More than <em class="fig">a thousand rhinos</em>, for their horns — and countless jaguars, sloths and macaws no one ever counts.',
           'Added together, that\'s roughly <em class="fig">one wild life taken every six seconds.</em>',
         ],
@@ -249,7 +295,17 @@
       choicePrompt: '她还没有发现你。',
       waitBtn: '等待',
       shootBtn: '开枪',
+      hbLabel: '已逝去',
+      feedHint: '哄他到水边 —— 轻触河面',
       waitLines: ['你等了。', '但皮还是值钱。', '你的手指还是动了。'],
+      refuseLines: [
+        '你放下了枪。你没有开火。',
+        '莫莫抬起头。幼崽没入绿色之中。仅仅一瞬 —— 它们不见了。',
+        '你放过了这一家。',
+        '但那座钟，没有陪你一起等。',
+        '六秒 —— 在你永远看不到的地方，又一只倒下了。',
+        '枪，还在你手里。永远会有下一个旱季。下一个猎人。',
+      ],
       guardianBtn: '以守护者身份，重走一遍',
       guardHint: '瞄准  ·  点击护住每一只',
       guardResolve: '它们活了下来。这一次，它们活了下来。',
@@ -275,8 +331,8 @@
         16: '好好看看它  ·  准备好了再点',
       },
       hintPressEnter: '点击任意处，或按  ENTER',
-      sceneNames: { intro: '序', 0: '警告', 1: '温暖', 16: '凝住的一刻', 2: '猎人', 7: '选择', 3: '那一枪', 4: '余波', 8: '幼崽', 9: '那张皮', 5: '真相', 6: '来源', 10: '守护者', 12: '守望', 13: '挺身', 11: '守护', 14: '它们活着' },
-      sceneDesc: { intro: '开始之前', 0: '内容警告', 7: '一个从来不属于你的选择', 3: '狩猎 —— 你扣下扳机', 5: '真相与数据', 6: '参考文献', 10: '以守护者身份，重走一遍', 11: '你护住它们' },
+      sceneNames: { intro: '序', 0: '警告', 1: '温暖', 15: '她也曾是幼崽', 16: '凝住的一刻', 2: '猎人', 7: '选择', 3: '那一枪', 4: '余波', 8: '幼崽', 20: '多年以后', 9: '那张皮', 5: '真相', 6: '来源', 10: '守护者', 12: '守望', 13: '挺身', 11: '守护', 14: '它们活着' },
+      sceneDesc: { intro: '开始之前', 0: '内容警告', 15: '支线 · 一段回忆，往上一代', 20: '支线 · 一个圈合上了，往下一代', 7: '一个从来不属于你的选择', 3: '狩猎 —— 你扣下扳机', 5: '真相与数据', 6: '参考文献', 10: '以守护者身份，重走一遍', 11: '你护住它们' },
       reveal: {
         l1: '莫莫并不存在。',
         l2: '但每过 6 秒，就有一个真实的生命死去。',
@@ -298,6 +354,7 @@
       },
       intro: {
         data: [
+          '慢慢读这句话。就在它花掉的这六秒里，某个地方，已经有一个野生的生命消失了。',
           '每年，多达 <em class="fig">270 万只穿山甲</em> 死于盗猎。约 <em class="fig">2 万头大象</em>，为了象牙。<em class="fig">一千多头犀牛</em>，为了犀角 —— 还有无数没人统计的美洲豹、树懒和金刚鹦鹉。',
           '加在一起，<em class="fig">大约每过六秒，就有一个野生的生命被夺走。</em>',
         ],
@@ -343,15 +400,59 @@
 
     if (line.sound === 'cry') playCry();
 
+    if (line.gate === 'feed') {                 /* feed gate: stay locked until the water is tapped */
+      await delay(line.wait || 800);
+      if (myToken !== playToken) return;
+      startFeedGate(promptSel);
+      return;
+    }
+
+    canInteract = true;                         /* a click advances immediately now — no waiting out `wait` */
     await delay(line.wait || 800);
     if (myToken !== playToken) return;
     prompt.classList.remove('hidden');
-    canInteract = true;
+  }
+
+  /* (④) Feeding gate: a global click won't advance — only tapping the water
+     does. The player completes the nudge Momo began; then Sol drinks. */
+  function startFeedGate(promptSel) {
+    const hot = $('#warmTouch');
+    const prompt = $(promptSel);
+    if (prompt) { prompt.textContent = t('feedHint'); prompt.classList.remove('hidden'); }
+    if (!hot) { canInteract = true; return; }   /* fallback: behave like a normal line */
+    hot.classList.add('show');
+    hot.onclick = function (e) {
+      if (e) e.stopPropagation();
+      hot.onclick = null;
+      hot.classList.remove('show');
+      try { initAudio(); playChime(); } catch (_) {}
+      const r = hot.getBoundingClientRect();
+      spawnRipples(e ? e.clientX : r.left + r.width / 2, e ? e.clientY : r.top + r.height / 2);
+      if (prompt) prompt.textContent = t('clickContinue');
+      canInteract = true;
+      advanceText();
+    };
+  }
+
+  /* (④) expanding water rings where the cub's muzzle meets the surface */
+  function spawnRipples(cx, cy) {
+    const host = $('#scene-1');
+    if (!host) return;
+    for (let i = 0; i < 3; i++) {
+      const ring = document.createElement('div');
+      ring.className = 'ripple';
+      ring.style.left = cx + 'px';
+      ring.style.top = cy + 'px';
+      ring.style.animationDelay = (i * 0.22) + 's';
+      host.appendChild(ring);
+      setTimeout(() => ring.remove(), 1500 + i * 220);
+    }
   }
 
   function advanceText() {
     if (!canInteract) return;
     canInteract = false;
+    playToken++;   /* abort the still-pending wait of the line we're leaving (prevents a late prompt flash) */
     lineIdx++;
     if (textCtx.onAdvance) textCtx.onAdvance(lineIdx);
     if (lineIdx < textCtx.lines.length) {
@@ -424,6 +525,9 @@
   }
 
   /* ============ SCENE TRANSITIONS ============ */
+  /* 支线 scenes — entering one plays a ~2s black-screen interlude first */
+  const BRANCH_SCENES = new Set([15, 20]);
+
   function goTo(sceneId) {
     if (isTransitioning) return;
     isTransitioning = true;
@@ -431,6 +535,21 @@
     playToken++;   /* abort any line still typing in the outgoing scene */
     const cur = $(`#scene-${currentScene}`);
     const nxt = $(`#scene-${sceneId}`);
+
+    if (BRANCH_SCENES.has(sceneId) || BRANCH_SCENES.has(currentScene)) {
+      /* main ↔ 支线 : 2s black interlude on the way in AND on the way out */
+      const black = $('#blackout');
+      if (black) black.classList.add('show');
+      setTimeout(() => {
+        cur.classList.remove('active', 'fade-out');
+        nxt.classList.add('active');
+        currentScene = sceneId;
+        enterScene(sceneId);
+        setTimeout(() => { if (black) black.classList.remove('show'); isTransitioning = false; }, 1150);
+      }, 900);
+      return;
+    }
+
     cur.classList.add('fade-out');
     setTimeout(() => {
       cur.classList.remove('active', 'fade-out');
@@ -469,6 +588,8 @@
       case 'intro': enterIntro(); break;
       case 0: enterHorror();     break;
       case 1: enterWarm();       break;
+      case 15: enterSubline1();  break;
+      case 20: enterSubline2();  break;
       case 16: enterMoment();    break;
       case 2: enterHunter();     break;
       case 7: enterChoice();     break;
@@ -880,6 +1001,8 @@
   function enterWarm() {
     lineIdx = 0;
     startAmbient();   /* (E) rainforest bed begins */
+    const hot = $('#warmTouch');   /* (④) reset the feeding beacon on every (re)entry */
+    if (hot) { hot.onclick = null; hot.classList.remove('show'); }
 
     /* reset the two background layers to the opening beat (no fade) */
     const a = $('#bg1'), b = $('#bg1b');
@@ -893,7 +1016,7 @@
       lines: WARM_LINES,
       panel: '#textPanel1',
       prompt: '#prompt1',
-      nextScene: 2,
+      nextScene: 15,   /* 支线① : 她也曾是幼崽 (then returns to the hunter) */
       onAdvance: function (idx) { setWarmBeat(idx); },
     };
     playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
@@ -1121,9 +1244,31 @@
       lines: CUB_LINES,
       panel: '#textPanel8',
       prompt: '#prompt8',
-      nextScene: 9,
+      nextScene: 20,   /* 支线② : 多年以后 (then returns to the skin) */
       onAdvance: function (idx) { setCubBeat(idx); },
     };
+    playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
+  }
+
+  /* ============ SCENE 15 · 支线① : SHE WAS ONCE A CUB TOO ============ */
+  function enterSubline1() {
+    lineIdx = 0;
+    const a = $('#bg15'), b = $('#bg15b');
+    a.style.backgroundImage = "url('images/warm/momo_memory.png')";
+    a.style.opacity = '1';
+    b.style.opacity = '0';
+    textCtx = { lines: SUBLINE1_LINES, panel: '#textPanel15', prompt: '#prompt15', nextScene: 2, onAdvance: null };
+    playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
+  }
+
+  /* ============ SCENE 20 · 支线② : YEARS LATER (Sol grown) ============ */
+  function enterSubline2() {
+    lineIdx = 0;
+    const a = $('#bg20'), b = $('#bg20b');
+    a.style.backgroundImage = "url('images/warm/sol_grown.png')";
+    a.style.opacity = '1';
+    b.style.opacity = '0';
+    textCtx = { lines: SUBLINE2_LINES, panel: '#textPanel20', prompt: '#prompt20', nextScene: 9, onAdvance: null };
     playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
   }
 
@@ -1457,7 +1602,7 @@
     const buttons = $('#choiceButtons');
     const text = $('#choiceText');
     text.textContent = t('choicePrompt');
-    text.classList.remove('typewriter-cursor');
+    text.classList.remove('typewriter-cursor', 'narration', 'text-big');
     buttons.style.opacity = '1';
     buttons.style.pointerEvents = '';
     canInteract = true;
@@ -1472,14 +1617,19 @@
     const text = $('#choiceText');
     buttons.style.opacity = '0';
     buttons.style.pointerEvents = 'none';
+    text.classList.add('narration');   /* switch to the standard bottom-letterbox ADV format */
     $('#scene-7').classList.add('committed');   /* cursor becomes a crosshair you can't shake */
 
-    const lines = I18N[LANG].waitLines;
+    /* (D) The refusal is real — this family slips away. But the clock does
+       not stop: the heartbeat counter ticks, another one falls elsewhere,
+       and the rifle stays in your hands until the shot is taken anyway. */
+    const lines = I18N[LANG].refuseLines;
     await delay(700);
-    for (const ln of lines) {
+    for (let i = 0; i < lines.length; i++) {
       if (myToken !== playToken) return;
-      await typewrite(text, ln, 55);
-      await delay(1400);
+      await typewrite(text, lines[i], 50);
+      if (i === 1 || i === 4) { try { initAudio(); tickHeartbeat(); } catch (_) {} }
+      await delay(i >= 3 ? 1700 : 1400);
       if (myToken !== playToken) return;
       text.textContent = '';
     }
@@ -1604,10 +1754,12 @@
 
   /* Text-scene config used to rebuild a narration scene at any line. */
   const SCENE_TEXT = {
-    1: { lines: WARM_LINES, panel: '#textPanel1', prompt: '#prompt1', nextScene: 2, onAdvance: setWarmBeat },
+    1: { lines: WARM_LINES, panel: '#textPanel1', prompt: '#prompt1', nextScene: 15, onAdvance: setWarmBeat },
+    15: { lines: SUBLINE1_LINES, panel: '#textPanel15', prompt: '#prompt15', nextScene: 2, onAdvance: null },
     2: { lines: HUNTER_LINES, panel: '#textPanel2', prompt: '#prompt2', nextScene: 7, onAdvance: setHunterBeat },
     4: { lines: AFTERMATH_LINES, panel: '#textPanel4', prompt: '#prompt4', nextScene: 8, onAdvance: setAftermathFilterFor },
-    8: { lines: CUB_LINES, panel: '#textPanel8', prompt: '#prompt8', nextScene: 9, onAdvance: setCubBeat },
+    8: { lines: CUB_LINES, panel: '#textPanel8', prompt: '#prompt8', nextScene: 20, onAdvance: setCubBeat },
+    20: { lines: SUBLINE2_LINES, panel: '#textPanel20', prompt: '#prompt20', nextScene: 9, onAdvance: null },
     9: { lines: PELT_LINES, panel: '#textPanel9', prompt: '#prompt9', nextScene: 5, onAdvance: setPeltBeat },
     10: { lines: GUARD_LINES, panel: '#textPanel10', prompt: '#prompt10', nextScene: 12, onAdvance: null },
     12: { lines: GUARD_WARM_LINES, panel: '#textPanel12', prompt: '#prompt12', nextScene: 13, onAdvance: null },
@@ -1719,7 +1871,7 @@
   }
 
   /* ============ DEVELOPER SCENE-JUMP ============ */
-  const DEV_SCENES = ['intro', 0, 1, 2, 7, 3, 4, 8, 9, 5, 6, 10, 12, 13, 11, 14];
+  const DEV_SCENES = ['intro', 0, 1, 15, 2, 7, 3, 4, 8, 20, 9, 5, 6, 10, 12, 13, 11, 14];
   function buildDevList() {
     const list = $('#devList');
     if (!list) return;
@@ -1762,6 +1914,8 @@
     setTxt('#prompt4', t('clickContinue'));
     setTxt('#prompt8', t('clickContinue'));
     setTxt('#prompt9', t('clickContinue'));
+    setTxt('#prompt15', t('clickContinue'));
+    setTxt('#prompt20', t('clickContinue'));
     setTxt('#prompt12', t('clickContinue'));
     setTxt('#prompt13', t('clickContinue'));
     setTxt('#prompt14', t('clickContinue'));
@@ -1775,6 +1929,7 @@
     setTxt('#btnRefs', t('references'));
     setTxt('#btnWait', t('waitBtn'));
     setTxt('#btnShoot', t('shootBtn'));
+    setTxt('#hbLabel', t('hbLabel'));
     setTxt('#btnGuardian', t('guardianBtn'));
     setTxt('#btnGuardReturn', t('returnBtn'));
     setTxt('.refs-title', t('worksCited'));
@@ -1931,6 +2086,20 @@
     /* Scene 2: hunter text — click to advance lines */
     $('#scene-2').addEventListener('click', (e) => {
       if (currentScene !== 2) return;
+      if (e.target.closest('.btn')) return;
+      advanceText();
+    });
+
+    /* Scene 15 · 支线① : flashback — click to advance lines */
+    $('#scene-15').addEventListener('click', (e) => {
+      if (currentScene !== 15) return;
+      if (e.target.closest('.btn')) return;
+      advanceText();
+    });
+
+    /* Scene 20 · 支线② : years later — click to advance lines */
+    $('#scene-20').addEventListener('click', (e) => {
+      if (currentScene !== 20) return;
       if (e.target.closest('.btn')) return;
       advanceText();
     });
