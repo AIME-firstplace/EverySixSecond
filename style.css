@@ -1493,6 +1493,27 @@ html, body {
 }
 .act-list a { color: #e5c282; text-decoration: none; border-bottom: 1px solid rgba(229,194,130,0.4); }
 .act-inner .ending-btn { display: block; margin: 0 auto; }
+
+/* Endings gallery */
+.gallery-list { margin: 0 0 1.8rem; display: flex; flex-direction: column; gap: 0.85rem; }
+.gallery-item {
+  display: flex; align-items: baseline; gap: 1rem;
+  padding: 0.7rem 1.1rem; border: 1px solid rgba(229, 194, 130, 0.16);
+}
+.gallery-item.unlocked { border-color: rgba(229, 194, 130, 0.45); }
+.gallery-item .g-name {
+  font-family: 'Bodoni Moda', Georgia, serif; font-size: 1.15rem;
+  color: #e5c282; min-width: 7.5rem; flex-shrink: 0;
+}
+.gallery-item.locked .g-name { color: #6e6258; letter-spacing: 0.25em; }
+.gallery-item .g-fate {
+  font-family: 'Lora', Georgia, serif; font-size: 0.98rem; line-height: 1.5; color: #cabfae;
+}
+.gallery-item.locked .g-fate { color: #6e6258; font-style: italic; }
+@media (max-width: 600px) {
+  .gallery-item { flex-direction: column; gap: 0.25rem; }
+  .gallery-item .g-name { min-width: 0; }
+}
 .ending-btn {
   font-size: 0.92rem; padding: 0.75rem 2rem; letter-spacing: 0.16em;
   border-color: rgba(229,194,130,0.4);

@@ -21,6 +21,7 @@
 
   let peltEndingTarget = null;   /* when set, 那张皮(9) ends on this ending instead of the truth */
   let endingContinueTo = null;   /* target scene for the ending「继续」button */
+  let lastEnding = null;         /* most recent ending reached — drives the per-ending share card */
 
   /* (甲·双层) story unlock + which endings have been reached */
   let storyUnlocked = false;
@@ -35,6 +36,7 @@
   }
   function recordEnding(key) {
     unlockedEndings.add(key);
+    lastEnding = key;
     try { localStorage.setItem('e6s_endings', JSON.stringify([...unlockedEndings])); } catch (_) {}
     unlockStory();
   }
@@ -270,6 +272,17 @@
       endName_changye: 'Nightfall',
       endName_kongqiang: 'Hollow',
       endName_poxiao: 'Daybreak',
+      galleryBtn: 'Endings',
+      galleryTitle: 'Endings — {n} of 5',
+      endLocked: '? ? ?',
+      endLockedHint: 'not yet reached',
+      cardTag_xuejia: 'It paid well. It always does.',
+      cardTag_daijia: 'You hesitated. She did not.',
+      cardTag_changye: 'They lost their mother — not each other.',
+      cardTag_kongqiang: 'You walked away. The clock did not.',
+      cardTag_poxiao: 'Not this one. Not today.',
+      saveCardBtn: 'Save your ending card',
+      cardEndingLbl: 'ENDING — {name}',
       waitLines: ['You waited.', 'But the skin still pays.', 'Your finger moved anyway.'],
       refuseLines: [
         "You lower the rifle. You don't fire.",
@@ -403,6 +416,17 @@
       endName_changye: '长夜',
       endName_kongqiang: '空枪',
       endName_poxiao: '破晓',
+      galleryBtn: '结局图鉴',
+      galleryTitle: '结局 —— 5 个里，你解锁了 {n} 个',
+      endLocked: '？ ？ ？',
+      endLockedHint: '尚未抵达',
+      cardTag_xuejia: '它卖了个好价钱。它总是如此。',
+      cardTag_daijia: '你迟疑了。她没有。',
+      cardTag_changye: '它们失去了母亲 —— 但没有失去彼此。',
+      cardTag_kongqiang: '你转身离开。那座钟没有。',
+      cardTag_poxiao: '不是这一只。不是今天。',
+      saveCardBtn: '保存你的结局卡',
+      cardEndingLbl: '结局 ——「{name}」',
       waitLines: ['你等了。', '但皮还是值钱。', '你的手指还是动了。'],
       refuseLines: [
         '你放下了枪。你没有开火。',
@@ -1631,6 +1655,14 @@
     x.strokeStyle = 'rgba(229,194,130,0.7)'; x.lineWidth = 1;
     x.beginPath(); x.moveTo(W / 2 - 120, 176); x.lineTo(W / 2 + 120, 176); x.stroke();
 
+    /* per-ending: name the ending the player reached */
+    const hasEnd = !!lastEnding;
+    if (hasEnd) {
+      x.fillStyle = '#e5c282';
+      x.font = '600 34px "Bodoni Moda", Georgia, "Songti SC", serif';
+      x.fillText(t('cardEndingLbl').replace('{name}', endName(lastEnding)), W / 2, 226);
+    }
+
     const elapsed = pageOpenTime ? (Date.now() - pageOpenTime) / 1000 : 0;
     const lines = [
       t('cardStayed').replace('{t}', fmtTime(elapsed)),
@@ -1638,20 +1670,20 @@
       t('cardNamed').replace('{cub}', getCubName()),
     ];
     x.fillStyle = '#d8d2c7'; x.font = '32px Georgia, "Songti SC", serif';
-    let y = 268;
-    lines.forEach((ln) => { x.fillText(ln, W / 2, y); y += 60; });
+    let y = hasEnd ? 300 : 280;
+    lines.forEach((ln) => { x.fillText(ln, W / 2, y); y += 58; });
 
-    drawPaw(x, W / 2, 478, 24);
+    drawPaw(x, W / 2, hasEnd ? 486 : 478, 24);
 
     x.fillStyle = '#c0392b'; x.font = 'italic 26px Georgia, "Songti SC", serif';
-    x.fillText(t('cardClosing'), W / 2, 552);
+    x.fillText(hasEnd ? t('cardTag_' + lastEnding) : t('cardClosing'), W / 2, 552);
     x.fillStyle = '#7d766b'; x.font = '18px "Courier New", monospace';
     x.fillText('every-six-seconds.vercel.app', W / 2, H - 56);
 
     try {
       const a = document.createElement('a');
       a.href = c.toDataURL('image/png');
-      a.download = 'every-six-seconds.png';
+      a.download = 'every-six-seconds' + (hasEnd ? '-' + lastEnding : '') + '.png';
       a.click();
     } catch (_) {}
   }
@@ -1893,6 +1925,31 @@
   function showActScreen() { const s = $('#actScreen'); if (s) s.classList.add('show'); }
   function hideActScreen() { const s = $('#actScreen'); if (s) s.classList.remove('show'); }
 
+  /* ============ ENDINGS GALLERY (X of 5) ============ */
+  const ENDING_ORDER = ['xuejia', 'daijia', 'kongqiang', 'changye', 'poxiao'];
+  function renderGallery() {
+    const title = $('#galleryTitle');
+    if (title) title.textContent = t('galleryTitle').replace('{n}', unlockedEndings.size);
+    const list = $('#galleryList');
+    if (!list) return;
+    list.innerHTML = '';
+    ENDING_ORDER.forEach((key) => {
+      const unlocked = unlockedEndings.has(key);
+      const row = document.createElement('div');
+      row.className = 'gallery-item ' + (unlocked ? 'unlocked' : 'locked');
+      const name = document.createElement('span');
+      name.className = 'g-name';
+      name.textContent = unlocked ? endName(key) : t('endLocked');
+      const fate = document.createElement('span');
+      fate.className = 'g-fate';
+      fate.innerHTML = unlocked ? (t('fate_' + key) || '').replace(/\{cub\}/g, getCubName()) : t('endLockedHint');
+      row.appendChild(name); row.appendChild(fate);
+      list.appendChild(row);
+    });
+  }
+  function showGallery() { renderGallery(); const s = $('#galleryScreen'); if (s) s.classList.add('show'); }
+  function hideGallery() { const s = $('#galleryScreen'); if (s) s.classList.remove('show'); }
+
   /* "Wait" still ends in the shot — the choice was never real. */
   async function chooseWait() {
     if (!canInteract) return;
@@ -2112,6 +2169,7 @@
     const dc = $('#deathChar'); if (dc) dc.style.opacity = '';
     const bo = $('#blackout'); if (bo) bo.classList.remove('show');
     const as = $('#actScreen'); if (as) as.classList.remove('show');
+    const gs = $('#galleryScreen'); if (gs) gs.classList.remove('show');
     const fb = $('#forkButtons'); if (fb) { fb.classList.add('hidden'); fb.style.opacity = '0'; }
     const c3 = $('#choiceButtons3'); if (c3) c3.style.opacity = '0';
     const b21 = $('#bg21'); if (b21) b21.classList.remove('lunge');
@@ -2241,6 +2299,10 @@
     setTxt('#btnAct', t('actBtn'));
     setTxt('#btnAct2', t('actBtn'));
     setTxt('#btnActClose', t('actClose'));
+    setTxt('#btnGallery', t('galleryBtn'));
+    setTxt('#btnGallery2', t('galleryBtn'));
+    setTxt('#btnGalleryClose', t('actClose'));
+    setTxt('#btnSaveCard', t('saveCardBtn'));
     setTxt('#actTitle', t('actTitle'));
     ['act1', 'act2', 'act3'].forEach((id) => { const e = $('#' + id); if (e) e.innerHTML = t(id); });
     setTxt('#prompt22', t('clickContinue'));
@@ -2461,6 +2523,16 @@
     if (btnActClose) btnActClose.addEventListener('click', (e) => { e.stopPropagation(); hideActScreen(); });
     const actScreen = $('#actScreen');
     if (actScreen) actScreen.addEventListener('click', (e) => { if (e.target.id === 'actScreen') hideActScreen(); });
+    const btnSaveCard = $('#btnSaveCard');
+    if (btnSaveCard) btnSaveCard.addEventListener('click', (e) => { e.stopPropagation(); makeCard(); });
+    const btnGallery = $('#btnGallery');
+    if (btnGallery) btnGallery.addEventListener('click', (e) => { e.stopPropagation(); showGallery(); });
+    const btnGallery2 = $('#btnGallery2');
+    if (btnGallery2) btnGallery2.addEventListener('click', (e) => { e.stopPropagation(); showGallery(); });
+    const btnGalleryClose = $('#btnGalleryClose');
+    if (btnGalleryClose) btnGalleryClose.addEventListener('click', (e) => { e.stopPropagation(); hideGallery(); });
+    const galleryScreen = $('#galleryScreen');
+    if (galleryScreen) galleryScreen.addEventListener('click', (e) => { if (e.target.id === 'galleryScreen') hideGallery(); });
 
     /* Scene 22 / 23 endings — click to advance narration */
     $('#scene-22').addEventListener('click', (e) => {
