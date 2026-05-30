@@ -19,6 +19,9 @@
   let deathTimer = null;
   let heartbeatTimer = null;    /* (D) persistent 6s tick */
 
+  let peltEndingTarget = null;   /* when set, 那张皮(9) ends on this ending instead of the truth */
+  let endingContinueTo = null;   /* target scene for the ending「继续」button */
+
   /* (甲·双层) story unlock + which endings have been reached */
   let storyUnlocked = false;
   const unlockedEndings = new Set();
@@ -244,6 +247,7 @@
       unlockTpl: 'ENDING UNLOCKED · 「{name}」',
       rewindChoiceBtn: 'Back to the choice',
       restartBtn: 'From the beginning',
+      continueBtn: 'Follow the skin',
       endName_xuejia: 'Blood Money',
       endName_daijia: 'Reckoning',
       endName_changye: 'Nightfall',
@@ -362,6 +366,7 @@
       unlockTpl: '解锁结局 ·「{name}」',
       rewindChoiceBtn: '回到那个选择',
       restartBtn: '从头再来',
+      continueBtn: '继续 · 跟着那张皮',
       endName_xuejia: '血价',
       endName_daijia: '代价',
       endName_changye: '长夜',
@@ -1376,12 +1381,14 @@
   function enterPelt() {
     lineIdx = 0;
     setPeltLayerInstant(0);
+    const target = peltEndingTarget; peltEndingTarget = null;   /* 空枪 routes here, then lands its banner */
     textCtx = {
       lines: PELT_LINES,
       panel: '#textPanel9',
       prompt: '#prompt9',
       nextScene: 5,
       onAdvance: function (idx) { setPeltBeat(idx); },
+      onEnd: target ? function () { recordEnding(target); showEndingActions(target, {}); } : null,
     };
     playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
   }
@@ -1744,10 +1751,18 @@
     const ds = $('#deathScreen'); if (ds) ds.classList.remove('show');
     const dc = $('#deathChar'); if (dc) dc.textContent = t('deathChar');
     const dl = $('#deathLine'); if (dl) dl.textContent = '';
-    const flash = $('#deathFlash');
+    /* she explodes toward the camera — the lunge rushes in, then a red flash, then black */
+    const bg = $('#bg21');
+    if (bg) {
+      bg.style.backgroundImage = "url('images/backgrounds/jaguar_lunge.png')";
+      bg.classList.remove('lunge'); void bg.offsetWidth; bg.classList.add('lunge');
+    }
     try { initAudio(); playCry(); } catch (_) {}
+    await delay(1050);                            /* let the lunge land */
+    if (myToken !== playToken) return;
+    const flash = $('#deathFlash');
     if (flash) { flash.classList.remove('flash'); void flash.offsetWidth; flash.classList.add('flash'); }
-    await delay(560);
+    await delay(430);
     if (myToken !== playToken) return;
     if (ds) ds.classList.add('show');            /* the 死 character lands */
     await delay(1500);
@@ -1756,15 +1771,17 @@
     await delay(1700);
     if (myToken !== playToken) return;
     recordEnding('daijia');
-    showEndingActions('daijia', true);           /* offer 回档 back to the choice */
+    showEndingActions('daijia', { rewind: true });   /* offer 回档 back to the choice */
   }
 
   /* ============ SCENE 22 · ENDING 「空枪」 ============ */
+  /* you walked away — but the skin still gets sold; the narration flows
+     straight into 那张皮(9), which then lands the 空枪/Hollow banner. */
   function enterEmptyGun() {
     lineIdx = 0;
     const bg = $('#bg22'); if (bg) bg.style.backgroundImage = "url('images/backgrounds/forest_main.png')";
     textCtx = { lines: EMPTYGUN_LINES, panel: '#textPanel22', prompt: '#prompt22', nextScene: 0,
-      onEnd: function () { recordEnding('kongqiang'); showEndingActions('kongqiang', false); } };
+      onEnd: function () { peltEndingTarget = 'kongqiang'; goTo(9); } };
     playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
   }
 
@@ -1773,15 +1790,23 @@
     lineIdx = 0;
     const bg = $('#bg23'); if (bg) bg.style.backgroundImage = "url('images/backgrounds/longnight.png')";
     textCtx = { lines: LONGNIGHT_LINES, panel: '#textPanel23', prompt: '#prompt23', nextScene: 0,
-      onEnd: function () { recordEnding('changye'); showEndingActions('changye', false); } };
+      /* offer「继续」to follow where her skin went (→ 那张皮 → 真相 = 血价) */
+      onEnd: function () { recordEnding('changye'); showEndingActions('changye', { continueTo: 9 }); } };
     playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
   }
 
-  /* ============ SHARED ENDING ACTIONS (unlock banner + rewind / restart) ============ */
-  function showEndingActions(key, allowRewind) {
+  /* ============ SHARED ENDING ACTIONS (unlock banner + rewind / continue / restart) ============ */
+  function showEndingActions(key, opts) {
+    opts = opts || {};
     canInteract = false;
     const u = $('#endingUnlock'); if (u) u.textContent = t('unlockTpl').replace('{name}', endName(key));
-    const rw = $('#btnRewindChoice'); if (rw) rw.classList.toggle('hidden', !allowRewind);
+    const rw = $('#btnRewindChoice'); if (rw) rw.classList.toggle('hidden', !opts.rewind);
+    const ct = $('#btnContinue');
+    if (ct) {
+      const hasCont = opts.continueTo != null;
+      ct.classList.toggle('hidden', !hasCont);
+      endingContinueTo = hasCont ? opts.continueTo : null;
+    }
     const wrap = $('#endingActions'); if (wrap) wrap.classList.add('show');
   }
   function hideEndingActions() {
@@ -2116,6 +2141,7 @@
     setTxt('#btnFollow', t('followBtn'));
     setTxt('#btnStay', t('stayBtn'));
     setTxt('#btnRewindChoice', t('rewindChoiceBtn'));
+    setTxt('#btnContinue', t('continueBtn'));
     setTxt('#btnRestart', t('restartBtn'));
     setTxt('#prompt22', t('clickContinue'));
     setTxt('#prompt23', t('clickContinue'));
@@ -2317,6 +2343,13 @@
       hideEndingActions();
       const ds = $('#deathScreen'); if (ds) ds.classList.remove('show');
       goTo(7);
+    });
+    const btnContinue = $('#btnContinue');
+    if (btnContinue) btnContinue.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const to = endingContinueTo;
+      hideEndingActions();
+      if (to != null) goTo(to);
     });
     const btnRestart = $('#btnRestart');
     if (btnRestart) btnRestart.addEventListener('click', (e) => { e.stopPropagation(); location.reload(); });

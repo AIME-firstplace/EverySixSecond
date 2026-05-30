@@ -1406,6 +1406,13 @@ html, body {
 .blackout.show { opacity: 1; pointer-events: auto; }
 
 /* ============ Death ending 「代价」 ============ */
+/* the jaguar lunges — the image rushes toward the camera */
+#bg21 { transform-origin: 50% 42%; }
+#bg21.lunge { animation: lungeIn 1.05s cubic-bezier(0.2, 0.55, 0.25, 1) forwards; }
+@keyframes lungeIn {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.42); }
+}
 .death-flash {
   position: absolute; inset: 0;
   background: #6e0d0d;
