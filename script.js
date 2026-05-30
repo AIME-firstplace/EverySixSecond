@@ -187,10 +187,13 @@
   /* Ending「长夜」— you stayed; the orphaned cubs survive their first night. */
   const LONGNIGHT_LINES = [
     { text: { en: 'You stayed. You did not follow the money.', zh: '你留了下来。你没有追着钱走。' }, speed: 50, wait: 1500 },
-    { text: { en: 'But staying could not bring her back.', zh: '可是留下，也唤不回她。' }, speed: 48, wait: 1600 },
-    { text: { en: 'The cubs pressed together against the cold, and waited out the dark.', zh: '两只幼崽挤在一起取暖，熬着这片黑。' }, speed: 48, wait: 1700 },
-    { text: { en: 'One kept its eyes open until dawn.', zh: '有一只，把眼睛睁到了天亮。' }, speed: 48, wait: 1800 },
-    { text: { en: 'They survived the first night. Almost none survive the nights that follow.', zh: '它们撑过了第一夜。而之后的每一夜，几乎无人能撑过。' }, speed: 46, wait: 2600, big: true },
+    { text: { en: 'You could not bring their mother back — but you did not leave them alone.', zh: '你唤不回它们的母亲 —— 但你没有丢下它们。' }, speed: 48, wait: 1700 },
+    { text: { en: 'Through the long, cold dark, the two cubs pressed together and waited.', zh: '在漫长冰冷的黑里，两只幼崽挤在一起，等着。' }, speed: 48, wait: 1700 },
+    { text: { en: 'One kept its eyes open until the sky turned grey.', zh: '有一只，把眼睛睁到天色泛白。' }, speed: 48, wait: 1800 },
+    { text: { en: 'Then — at first light — voices. Footsteps through the wet leaves.', zh: '然后 —— 天刚亮 —— 有人声。脚步踩过湿叶。' }, speed: 48, wait: 1700 },
+    { text: { en: 'Not hunters. Rangers — a rescue team, radioed in before dawn.', zh: '不是猎人。是护林员 —— 是天亮前就被叫来的救援队。' }, speed: 48, wait: 1700 },
+    { text: { en: '"Over here — quick — get them warm." Gentle hands lift them from the dark.', zh: '「在这儿 —— 快 —— 给它们保暖。」一双双手，把它们从黑暗里轻轻托起。' }, speed: 46, wait: 1900 },
+    { text: { en: 'They lost their mother. But they were not lost. Not this time.', zh: '它们失去了母亲。但它们没有被丢下。这一次，没有。' }, speed: 46, wait: 2600, big: true },
   ];
 
   /* ============ I18N (EN / 中文) ============ */
@@ -1753,7 +1756,7 @@
     canInteract = false;
     hideEndingActions();
     const ds = $('#deathScreen'); if (ds) ds.classList.remove('show');
-    const dc = $('#deathChar'); if (dc) dc.textContent = t('deathChar');
+    const dc = $('#deathChar'); if (dc) { dc.textContent = t('deathChar'); dc.style.opacity = ''; dc.style.transition = ''; }
     const dl = $('#deathLine'); if (dl) dl.textContent = '';
     const bg = $('#bg21');
     const panel = $('#textPanel21');
@@ -1792,7 +1795,18 @@
     if (flash) { flash.classList.remove('flash'); void flash.offsetWidth; flash.classList.add('flash'); }
     await delay(430);
     if (myToken !== playToken) return;
-    if (ds) ds.classList.add('show');            /* the 死 character lands */
+
+    /* ④ third-person aftermath — she stands over what the tall grass hides */
+    if (bg) { bg.classList.remove('lunge'); bg.style.backgroundImage = "url('images/backgrounds/death_aftermath.png')"; }
+    await delay(2300);
+    if (myToken !== playToken) return;
+
+    /* 2 seconds of black before the 死 lands */
+    if (dc) dc.style.opacity = '0';
+    if (ds) ds.classList.add('show');
+    await delay(2000);
+    if (myToken !== playToken) return;
+    if (dc) { dc.style.transition = 'opacity 0.9s ease'; dc.style.opacity = '1'; }
     await delay(1500);
     if (myToken !== playToken) return;
     if (dl) dl.textContent = t('deathLine');
@@ -1818,8 +1832,7 @@
     lineIdx = 0;
     const bg = $('#bg23'); if (bg) bg.style.backgroundImage = "url('images/backgrounds/longnight.png')";
     textCtx = { lines: LONGNIGHT_LINES, panel: '#textPanel23', prompt: '#prompt23', nextScene: 0,
-      /* offer「继续」to follow where her skin went (→ 那张皮 → 真相 = 血价) */
-      onEnd: function () { recordEnding('changye'); showEndingActions('changye', { continueTo: 9 }); } };
+      onEnd: function () { recordEnding('changye'); showEndingActions('changye', {}); } };
     playLine(textCtx.panel, textCtx.prompt, textCtx.lines[0]);
   }
 
@@ -2053,8 +2066,20 @@
     canInteract = true;
   }
 
+  /* hide any lingering ending overlay (banner / 死 screen / black) before navigating away */
+  function clearEndingUI() {
+    const ea = $('#endingActions'); if (ea) ea.classList.remove('show');
+    const ds = $('#deathScreen'); if (ds) ds.classList.remove('show');
+    const dc = $('#deathChar'); if (dc) dc.style.opacity = '';
+    const bo = $('#blackout'); if (bo) bo.classList.remove('show');
+    const fb = $('#forkButtons'); if (fb) { fb.classList.add('hidden'); fb.style.opacity = '0'; }
+    const c3 = $('#choiceButtons3'); if (c3) c3.style.opacity = '0';
+    const b21 = $('#bg21'); if (b21) b21.classList.remove('lunge');
+  }
+
   function jumpTo(beat) {
     closeHistory();
+    clearEndingUI();
     playToken++;                 /* kill any in-flight typewriter */
     isTransitioning = false;
     canInteract = false;
@@ -2095,6 +2120,7 @@
   }
 
   function openHistory() {
+    clearEndingUI();
     buildHistoryList();
     $('#historyPanel').classList.add('open');
     const list = $('#historyList');
@@ -2126,6 +2152,7 @@
   function devJump(scene) {
     closeDevPanel();
     closeHistory();
+    clearEndingUI();
     playToken++;
     isTransitioning = false;
     canInteract = false;
