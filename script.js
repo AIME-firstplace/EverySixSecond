@@ -231,7 +231,7 @@
       cardClosing: 'Not without you.',
       momentLine: 'Remember this green.',
       momentLine2: "It won't be green when you come back.",
-      counterTpl: 'Since you opened this page, an estimated <em class="fig">{n}</em> wild animals have been killed for human use.',
+      counterTpl: 'In the <em class="fig">{t}</em> you have spent here, an estimated <em class="fig">{n}</em> wild animals were killed for human use.',
       counterNote: 'An illustrative estimate (one every 6 seconds), drawn from documented annual tolls: up to 2.7M pangolins, ~20,000 elephants, 1,000+ rhinos and countless more. — <a href="https://www.awf.org/blog/27-million-pangolins-are-poached-every-year-scales-and-meat" target="_blank" rel="noopener">AWF</a>',
       choicePrompt: 'She still hasn\'t seen you.',
       waitBtn: 'Wait',
@@ -253,6 +253,18 @@
       rewindChoiceBtn: 'Back to the choice',
       restartBtn: 'From the beginning',
       continueBtn: 'Follow the skin',
+      namedRecall: 'You gave one of her cubs a name: <span class="cubname">{cub}</span>.',
+      fate_xuejia: '{cub} survived — thin, and alone.',
+      fate_daijia: 'They lived. You did not.',
+      fate_changye: '{cub} was lifted out of the dark — alive.',
+      fate_kongqiang: 'Someone else pulled the trigger. {cub} lost her mother all the same.',
+      fate_poxiao: '{cub} grew up — safe.',
+      actBtn: 'What you can do',
+      actTitle: 'What actually helps',
+      act1: 'Never buy wildlife products — skins, teeth, exotic pets. No demand, no killing.',
+      act2: 'Back the people on the ground — rangers, and groups like <a href="https://panthera.org" target="_blank" rel="noopener">Panthera</a>, WWF, Rainforest Trust.',
+      act3: 'Share one story. The fastest way a number becomes real to someone else — is you.',
+      actClose: 'Close',
       endName_xuejia: 'Blood Money',
       endName_daijia: 'Reckoning',
       endName_changye: 'Nightfall',
@@ -352,7 +364,7 @@
       cardClosing: '没有你，就不够。',
       momentLine: '记住这片绿。',
       momentLine2: '等你回来，它就不绿了。',
-      counterTpl: '自你打开此页，估计已有 <em class="fig">{n}</em> 个野生生命因人类而死。',
+      counterTpl: '在你停留于此的 <em class="fig">{t}</em> 里，估计已有 <em class="fig">{n}</em> 个野生生命，因人类而死。',
       counterNote: '示意性估算（按每 6 秒一只），依据已记录的年度数字：穿山甲高达 270 万、大象约 2 万、犀牛 1000+，以及无数其他。— <a href="https://www.awf.org/blog/27-million-pangolins-are-poached-every-year-scales-and-meat" target="_blank" rel="noopener">AWF</a>',
       choicePrompt: '她还没有发现你。',
       waitBtn: '等待',
@@ -374,6 +386,18 @@
       rewindChoiceBtn: '回到那个选择',
       restartBtn: '从头再来',
       continueBtn: '继续 · 跟着那张皮',
+      namedRecall: '你给她的一只幼崽，起名叫 <span class="cubname">{cub}</span>。',
+      fate_xuejia: '{cub} 独自活了下来 —— 瘦弱，孤单。',
+      fate_daijia: '它们活了下来。你，没有。',
+      fate_changye: '{cub} 被人从黑暗里抱了出来 —— 活着。',
+      fate_kongqiang: '别人替你扣下了扳机。{cub} 还是失去了母亲。',
+      fate_poxiao: '{cub} 长大了 —— 平安。',
+      actBtn: '你能做什么',
+      actTitle: '真正有用的，是这三件',
+      act1: '永远别买野生制品 —— 皮、牙、异宠。没有需求，就没有猎杀。',
+      act2: '支持一线的人 —— 护林员，以及 <a href="https://panthera.org" target="_blank" rel="noopener">Panthera</a>、WWF、雨林信托这样的组织。',
+      act3: '分享一个故事。一个数字之所以能击中别人 —— 往往就因为，是你转了它。',
+      actClose: '关闭',
       endName_xuejia: '血价',
       endName_daijia: '代价',
       endName_changye: '长夜',
@@ -1497,11 +1521,16 @@
   function renderDeathCounter() {
     const el = $('#deathCounter');
     if (!el) return;
-    el.innerHTML = t('counterTpl').replace('{n}', deathCount().toLocaleString());
+    const elapsed = pageOpenTime ? (Date.now() - pageOpenTime) / 1000 : 0;
+    el.innerHTML = t('counterTpl')
+      .replace('{t}', fmtTime(elapsed))
+      .replace('{n}', deathCount().toLocaleString());
   }
   function renderCounterNote() {
     const note = $('#deathCounterNote');
     if (note) note.innerHTML = t('counterNote');
+    const rc = $('#revealRecall');   /* (peak-end) recall the name on the truth screen too */
+    if (rc) rc.innerHTML = t('namedRecall').replace('{cub}', getCubName());
   }
   function startDeathCounter() {
     renderDeathCounter();
@@ -1840,6 +1869,14 @@
   function showEndingActions(key, opts) {
     opts = opts || {};
     canInteract = false;
+    /* (peak-end) recall the cub the player named, and how it ended */
+    const recall = $('#endingRecall');
+    if (recall) {
+      const cub = getCubName();
+      const named = t('namedRecall').replace('{cub}', cub);
+      const fate = (t('fate_' + key) || '').replace(/\{cub\}/g, cub);
+      recall.innerHTML = named + (fate ? '<br>' + fate : '');
+    }
     const u = $('#endingUnlock'); if (u) u.textContent = t('unlockTpl').replace('{name}', endName(key));
     const rw = $('#btnRewindChoice'); if (rw) rw.classList.toggle('hidden', !opts.rewind);
     const ct = $('#btnContinue');
@@ -1853,6 +1890,8 @@
   function hideEndingActions() {
     const wrap = $('#endingActions'); if (wrap) wrap.classList.remove('show');
   }
+  function showActScreen() { const s = $('#actScreen'); if (s) s.classList.add('show'); }
+  function hideActScreen() { const s = $('#actScreen'); if (s) s.classList.remove('show'); }
 
   /* "Wait" still ends in the shot — the choice was never real. */
   async function chooseWait() {
@@ -2072,6 +2111,7 @@
     const ds = $('#deathScreen'); if (ds) ds.classList.remove('show');
     const dc = $('#deathChar'); if (dc) dc.style.opacity = '';
     const bo = $('#blackout'); if (bo) bo.classList.remove('show');
+    const as = $('#actScreen'); if (as) as.classList.remove('show');
     const fb = $('#forkButtons'); if (fb) { fb.classList.add('hidden'); fb.style.opacity = '0'; }
     const c3 = $('#choiceButtons3'); if (c3) c3.style.opacity = '0';
     const b21 = $('#bg21'); if (b21) b21.classList.remove('lunge');
@@ -2198,6 +2238,11 @@
     setTxt('#btnRewindChoice', t('rewindChoiceBtn'));
     setTxt('#btnContinue', t('continueBtn'));
     setTxt('#btnRestart', t('restartBtn'));
+    setTxt('#btnAct', t('actBtn'));
+    setTxt('#btnAct2', t('actBtn'));
+    setTxt('#btnActClose', t('actClose'));
+    setTxt('#actTitle', t('actTitle'));
+    ['act1', 'act2', 'act3'].forEach((id) => { const e = $('#' + id); if (e) e.innerHTML = t(id); });
     setTxt('#prompt22', t('clickContinue'));
     setTxt('#prompt23', t('clickContinue'));
     setTxt('#hbLabel', t('hbLabel'));
@@ -2408,6 +2453,14 @@
     });
     const btnRestart = $('#btnRestart');
     if (btnRestart) btnRestart.addEventListener('click', (e) => { e.stopPropagation(); location.reload(); });
+    const btnAct = $('#btnAct');
+    if (btnAct) btnAct.addEventListener('click', (e) => { e.stopPropagation(); showActScreen(); });
+    const btnAct2 = $('#btnAct2');
+    if (btnAct2) btnAct2.addEventListener('click', (e) => { e.stopPropagation(); showActScreen(); });
+    const btnActClose = $('#btnActClose');
+    if (btnActClose) btnActClose.addEventListener('click', (e) => { e.stopPropagation(); hideActScreen(); });
+    const actScreen = $('#actScreen');
+    if (actScreen) actScreen.addEventListener('click', (e) => { if (e.target.id === 'actScreen') hideActScreen(); });
 
     /* Scene 22 / 23 endings — click to advance narration */
     $('#scene-22').addEventListener('click', (e) => {

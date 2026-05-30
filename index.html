@@ -210,6 +210,7 @@
       <div class="scene-inner cta-inner">
         <div class="text-panel reveal-text" id="textPanel5"></div>
         <div class="death-counter" id="deathCounter"></div>
+        <div class="reveal-recall" id="revealRecall"></div>
         <div class="death-note" id="deathCounterNote"></div>
         <div class="poaching-data" id="poachingData"></div>
         <div class="cta-buttons" id="ctaButtons">
@@ -217,6 +218,7 @@
           <button class="btn btn-share" id="btnShare">Share</button>
           <button class="btn btn-share" id="btnRefs">References</button>
           <button class="btn btn-share" id="btnCard">Save the card</button>
+          <button class="btn btn-share" id="btnAct2">What you can do</button>
           <button class="btn btn-share btn-guardian" id="btnGuardian">Walk it again, as a guardian</button>
         </div>
       </div>
@@ -342,11 +344,26 @@
 
     <!-- Shared ending actions (unlock banner + rewind / restart) -->
     <div class="ending-actions" id="endingActions">
+      <div class="ending-recall" id="endingRecall"></div>
       <div class="ending-unlock" id="endingUnlock"></div>
       <div class="ending-btns">
         <button class="btn ending-btn hidden" id="btnRewindChoice">Back to the choice</button>
         <button class="btn ending-btn hidden" id="btnContinue">Follow the skin</button>
+        <button class="btn ending-btn" id="btnAct">What you can do</button>
         <button class="btn ending-btn" id="btnRestart">From the beginning</button>
+      </div>
+    </div>
+
+    <!-- "What you can do" — skippable closing screen -->
+    <div class="act-screen" id="actScreen">
+      <div class="act-inner">
+        <div class="act-title" id="actTitle">What actually helps</div>
+        <ol class="act-list">
+          <li id="act1"></li>
+          <li id="act2"></li>
+          <li id="act3"></li>
+        </ol>
+        <button class="btn ending-btn" id="btnActClose">Close</button>
       </div>
     </div>
 
