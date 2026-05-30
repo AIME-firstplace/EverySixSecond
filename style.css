@@ -1258,7 +1258,8 @@ html, body {
 }
 /* these groups/buttons truly hide when tagged .hidden (no global .hidden exists) */
 .choice-buttons.hidden,
-.ending-btn.hidden { display: none !important; }
+.ending-btn.hidden,
+.btn-share.hidden { display: none !important; }
 .choice-btn {
   font-size: 1.05rem;
   padding: 0.9rem 3rem;
@@ -1514,6 +1515,30 @@ html, body {
   .gallery-item { flex-direction: column; gap: 0.25rem; }
   .gallery-item .g-name { min-width: 0; }
 }
+
+/* Names wall (collective memory) */
+.names-inner { text-align: center; }
+.names-count {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: clamp(3rem, 11vw, 6rem); font-weight: 700; line-height: 1;
+  color: #e5c282; text-shadow: 0 0 40px rgba(229, 194, 130, 0.3);
+}
+.names-line {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1rem, 2.2vw, 1.35rem); color: #d8cfc0;
+  margin: 0.6rem 0 1.8rem;
+}
+.names-grid {
+  display: flex; flex-wrap: wrap; gap: 0.5rem 0.7rem; justify-content: center;
+  max-height: 42vh; overflow-y: auto; margin-bottom: 2rem;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+          mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+}
+.name-chip {
+  font-family: 'Lora', Georgia, serif; font-size: 0.98rem; color: #ede6da;
+  padding: 0.25rem 0.7rem; border: 1px solid rgba(229, 194, 130, 0.22); border-radius: 2px;
+}
+.names-empty { font-family: 'Lora', Georgia, serif; color: #9a8d7e; font-style: italic; }
 .ending-btn {
   font-size: 0.92rem; padding: 0.75rem 2rem; letter-spacing: 0.16em;
   border-color: rgba(229,194,130,0.4);

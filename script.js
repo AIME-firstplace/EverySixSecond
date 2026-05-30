@@ -39,6 +39,7 @@
     lastEnding = key;
     try { localStorage.setItem('e6s_endings', JSON.stringify([...unlockedEndings])); } catch (_) {}
     unlockStory();
+    submitName(getCubName());   /* contribute the named cub to the collective wall (no-op if backend absent) */
   }
   function endName(key) { return t('endName_' + key); }
   let flashbackShown = false;   /* (C) only flash once per kill scene */
@@ -283,6 +284,9 @@
       cardTag_poxiao: 'Not this one. Not today.',
       saveCardBtn: 'Save your ending card',
       cardEndingLbl: 'ENDING — {name}',
+      wallBtn: 'The names wall',
+      wallLine: 'people have given a jaguar cub a name.',
+      wallEmpty: 'No names yet. Yours could be the first.',
       waitLines: ['You waited.', 'But the skin still pays.', 'Your finger moved anyway.'],
       refuseLines: [
         "You lower the rifle. You don't fire.",
@@ -427,6 +431,9 @@
       cardTag_poxiao: '不是这一只。不是今天。',
       saveCardBtn: '保存你的结局卡',
       cardEndingLbl: '结局 ——「{name}」',
+      wallBtn: '名字墙',
+      wallLine: '个人，给一只美洲豹幼崽起了名字。',
+      wallEmpty: '还没有名字。你的，可以是第一个。',
       waitLines: ['你等了。', '但皮还是值钱。', '你的手指还是动了。'],
       refuseLines: [
         '你放下了枪。你没有开火。',
@@ -1950,6 +1957,61 @@
   function showGallery() { renderGallery(); const s = $('#galleryScreen'); if (s) s.classList.add('show'); }
   function hideGallery() { const s = $('#galleryScreen'); if (s) s.classList.remove('show'); }
 
+  /* ============ NAMES WALL (collective memory · backend-optional) ============ */
+  const WALL_API = 'api/names';
+  let wallEnabled = false;
+  let wallData = { count: 0, names: [] };
+  let nameSubmitted = false;
+
+  async function probeWall() {
+    try {
+      const r = await fetch(WALL_API);
+      if (!r.ok) return;
+      const j = await r.json();
+      if (j && !j.disabled && !j.error) {
+        wallEnabled = true;
+        wallData = { count: j.count || 0, names: j.names || [] };
+        ['#btnWall', '#btnWall2'].forEach((s) => { const e = $(s); if (e) e.classList.remove('hidden'); });
+      }
+    } catch (_) {}
+  }
+  async function submitName(name) {
+    if (!wallEnabled || nameSubmitted) return;
+    const nm = (name || '').trim();
+    if (!nm) return;
+    nameSubmitted = true;
+    try {
+      const r = await fetch(WALL_API, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nm }),
+      });
+      const j = await r.json();
+      if (j && j.count) wallData.count = j.count;
+    } catch (_) {}
+  }
+  function renderWall() {
+    const cnt = $('#namesCount'); if (cnt) cnt.textContent = (wallData.count || 0).toLocaleString();
+    const line = $('#namesLine'); if (line) line.textContent = t('wallLine');
+    const grid = $('#namesGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const names = wallData.names || [];
+    if (!names.length) {
+      const e = document.createElement('div'); e.className = 'names-empty'; e.textContent = t('wallEmpty'); grid.appendChild(e);
+    } else {
+      names.forEach((nm) => { const sp = document.createElement('span'); sp.className = 'name-chip'; sp.textContent = nm; grid.appendChild(sp); });
+    }
+  }
+  async function showWall() {
+    try {
+      const r = await fetch(WALL_API);
+      if (r.ok) { const j = await r.json(); if (j && !j.disabled) wallData = { count: j.count || 0, names: j.names || [] }; }
+    } catch (_) {}
+    renderWall();
+    const s = $('#namesWall'); if (s) s.classList.add('show');
+  }
+  function hideWall() { const s = $('#namesWall'); if (s) s.classList.remove('show'); }
+
   /* "Wait" still ends in the shot — the choice was never real. */
   async function chooseWait() {
     if (!canInteract) return;
@@ -2170,6 +2232,7 @@
     const bo = $('#blackout'); if (bo) bo.classList.remove('show');
     const as = $('#actScreen'); if (as) as.classList.remove('show');
     const gs = $('#galleryScreen'); if (gs) gs.classList.remove('show');
+    const nw = $('#namesWall'); if (nw) nw.classList.remove('show');
     const fb = $('#forkButtons'); if (fb) { fb.classList.add('hidden'); fb.style.opacity = '0'; }
     const c3 = $('#choiceButtons3'); if (c3) c3.style.opacity = '0';
     const b21 = $('#bg21'); if (b21) b21.classList.remove('lunge');
@@ -2303,6 +2366,9 @@
     setTxt('#btnGallery2', t('galleryBtn'));
     setTxt('#btnGalleryClose', t('actClose'));
     setTxt('#btnSaveCard', t('saveCardBtn'));
+    setTxt('#btnWall', t('wallBtn'));
+    setTxt('#btnWall2', t('wallBtn'));
+    setTxt('#btnWallClose', t('actClose'));
     setTxt('#actTitle', t('actTitle'));
     ['act1', 'act2', 'act3'].forEach((id) => { const e = $('#' + id); if (e) e.innerHTML = t(id); });
     setTxt('#prompt22', t('clickContinue'));
@@ -2533,6 +2599,15 @@
     if (btnGalleryClose) btnGalleryClose.addEventListener('click', (e) => { e.stopPropagation(); hideGallery(); });
     const galleryScreen = $('#galleryScreen');
     if (galleryScreen) galleryScreen.addEventListener('click', (e) => { if (e.target.id === 'galleryScreen') hideGallery(); });
+    const btnWall = $('#btnWall');
+    if (btnWall) btnWall.addEventListener('click', (e) => { e.stopPropagation(); showWall(); });
+    const btnWall2 = $('#btnWall2');
+    if (btnWall2) btnWall2.addEventListener('click', (e) => { e.stopPropagation(); showWall(); });
+    const btnWallClose = $('#btnWallClose');
+    if (btnWallClose) btnWallClose.addEventListener('click', (e) => { e.stopPropagation(); hideWall(); });
+    const namesWall = $('#namesWall');
+    if (namesWall) namesWall.addEventListener('click', (e) => { if (e.target.id === 'namesWall') hideWall(); });
+    probeWall();   /* detect the backend; reveal wall entry points only if it answers */
 
     /* Scene 22 / 23 endings — click to advance narration */
     $('#scene-22').addEventListener('click', (e) => {

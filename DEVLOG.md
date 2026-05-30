@@ -3,6 +3,7 @@
 > 倒序,最新在上。每次更新一条,简要。
 
 ## 2026-05-30
+- **名字墙 / 集体记忆**：新增零依赖 Vercel serverless `api/names.js`（Upstash Redis REST，支持 KV_/UPSTASH_ 两套环境变量；sanitize 长度≤14+字符白名单+敏感词黑名单+按IP 8s 限流；存计数 + 最近200名）。前端 `#namesWall` 浮层显示大号总数 + 滚动名字网格；`probeWall()` 启动探测后端，**探测不到就隐藏入口**（GH Pages/未配置时优雅降级）；到达结局时 `submitName(getCubName())` 贡献名字（每会话一次）。结局横幅 + 真相页 CTA 加「名字墙」入口（默认隐藏，探测成功才显示）。⚠️ 需在 Vercel 开通 KV/Upstash + 配环境变量才真正生效。
 - **结局图鉴 + 完成度**：新增 `#galleryScreen` 浮层，标题"结局 — 解锁 X/5"，5 个结局按序(血价/代价/空枪/长夜/破晓)，已解锁显示名+命运，未解锁显示「？？？/尚未抵达」。结局横幅与真相页 CTA 各加「结局图鉴」入口。复用 `unlockedEndings`/`endName`/`fate_*`，照 `.act-screen` 浮层模式。`renderGallery/showGallery/hideGallery` + clearEndingUI 清理。
 - **结局专属分享卡**：`makeCard()` 按 `lastEnding`(在 recordEnding 里赋值)分支——卡上加"结局——「血价/Blood Money」"金字 + 按结局标语 `cardTag_*`(代替通用 cardClosing)，文件名带结局 key。结局横幅加「保存你的结局卡」按钮(复用 makeCard)。
 - **教育/难忘三连**：①**命名回收(峰值-结尾)**：每个结局横幅打出"你给她的一只幼崽起名叫 {cub}。"+ 按结局定制的命运行(fate_xuejia/daijia/changye/kongqiang/poxiao)；真相页也回收名字(中性,不带命运)。②**计数器个人化**：真相页计数改为"**在你停留于此的 X 分钟里**,约 N 个生命逝去"(counterTpl 加 {t},复用 fmtTime)。③**「你能做什么」收尾屏**(`#actScreen`):可跳过,3 条具体行动(别买野生制品/支持护林员&Panthera等/分享)+链接;结局横幅与真相页 CTA 各加入口按钮。
