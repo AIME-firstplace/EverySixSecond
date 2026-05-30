@@ -1256,6 +1256,9 @@ html, body {
   z-index: 20;
   transition: opacity 0.6s ease;
 }
+/* these groups/buttons truly hide when tagged .hidden (no global .hidden exists) */
+.choice-buttons.hidden,
+.ending-btn.hidden { display: none !important; }
 .choice-btn {
   font-size: 1.05rem;
   padding: 0.9rem 3rem;
