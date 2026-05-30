@@ -1363,6 +1363,7 @@ html, body {
 /* 支线①/② + 结局屏 — same bottom-letterbox ADV format as scene 8 */
 #scene-15 .text-panel,
 #scene-20 .text-panel,
+#scene-21 .text-panel,
 #scene-22 .text-panel,
 #scene-23 .text-panel {
   position: absolute;
@@ -1383,6 +1384,7 @@ html, body {
 }
 #scene-15 .text-panel::before,
 #scene-20 .text-panel::before,
+#scene-21 .text-panel::before,
 #scene-22 .text-panel::before,
 #scene-23 .text-panel::before {
   content: '';

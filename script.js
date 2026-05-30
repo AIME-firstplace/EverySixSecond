@@ -243,6 +243,8 @@
       stayBtn: 'Stay with them',
       forkPrompt: 'She is gone. What do you do now?',
       deathChar: 'DEAD',
+      deathBeat1: 'A dry branch snapped under your boot.',
+      deathBeat2: 'She whips her head around. She has seen you.',
       deathLine: 'You hesitated — and she was faster.',
       unlockTpl: 'ENDING UNLOCKED · 「{name}」',
       rewindChoiceBtn: 'Back to the choice',
@@ -362,6 +364,8 @@
       stayBtn: '留下陪它们',
       forkPrompt: '她不在了。现在，你怎么做？',
       deathChar: '死',
+      deathBeat1: '你脚下，一根枯枝啪地断了。',
+      deathBeat2: '她猛地回过头来。她，看见你了。',
       deathLine: '你迟疑了 —— 而她，比你快。',
       unlockTpl: '解锁结局 ·「{name}」',
       rewindChoiceBtn: '回到那个选择',
@@ -1751,13 +1755,37 @@
     const ds = $('#deathScreen'); if (ds) ds.classList.remove('show');
     const dc = $('#deathChar'); if (dc) dc.textContent = t('deathChar');
     const dl = $('#deathLine'); if (dl) dl.textContent = '';
-    /* she explodes toward the camera — the lunge rushes in, then a red flash, then black */
     const bg = $('#bg21');
+    const panel = $('#textPanel21');
+    if (panel) panel.textContent = '';
+    if (bg) bg.classList.remove('lunge');
+    try { initAudio(); } catch (_) {}
+
+    /* ① the hunter gives himself away — the jaguar is still unaware */
+    if (bg) bg.style.backgroundImage = "url('images/hunter/hidden.png')";
+    await delay(500);
+    if (myToken !== playToken) return;
+    if (panel) await typewrite(panel, t('deathBeat1'), 48);
+    await delay(1500);
+    if (myToken !== playToken) return;
+
+    /* ② she turns her head — she has seen you */
+    if (panel) panel.textContent = '';
+    if (bg) bg.style.backgroundImage = "url('images/hunter/alarm.png')";
+    try { playCry(); } catch (_) {}
+    await delay(450);
+    if (myToken !== playToken) return;
+    if (panel) await typewrite(panel, t('deathBeat2'), 48);
+    await delay(1500);
+    if (myToken !== playToken) return;
+
+    /* ③ she explodes toward the camera — the lunge rushes in, then red flash, then black */
+    if (panel) panel.textContent = '';
     if (bg) {
       bg.style.backgroundImage = "url('images/backgrounds/jaguar_lunge.png')";
       bg.classList.remove('lunge'); void bg.offsetWidth; bg.classList.add('lunge');
     }
-    try { initAudio(); playCry(); } catch (_) {}
+    try { playCry(); } catch (_) {}
     await delay(1050);                            /* let the lunge land */
     if (myToken !== playToken) return;
     const flash = $('#deathFlash');
